@@ -1,0 +1,109 @@
+{
+  "total_folders": 13,
+  "folder_results": {
+    "244414_201678": {
+      "total_files": 15,
+      "total_index_records": 69,
+      "auto_clear": 67,
+      "human_review": 2,
+      "blocked": 0,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-244414_201678\\job_report.json"
+    },
+    "299208_172565": {
+      "total_files": 15,
+      "total_index_records": 69,
+      "auto_clear": 67,
+      "human_review": 2,
+      "blocked": 0,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-299208_172565\\job_report.json"
+    },
+    "534668_175407": {
+      "total_files": 31,
+      "total_index_records": 69,
+      "auto_clear": 63,
+      "human_review": 2,
+      "blocked": 4,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-534668_175407\\job_report.json"
+    },
+    "536294_179488": {
+      "total_files": 27,
+      "total_index_records": 69,
+      "auto_clear": 63,
+      "human_review": 3,
+      "blocked": 3,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-536294_179488\\job_report.json"
+    },
+    "538189_165956": {
+      "total_files": 25,
+      "total_index_records": 69,
+      "auto_clear": 66,
+      "human_review": 1,
+      "blocked": 2,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-538189_165956\\job_report.json"
+    },
+    "538620_162035": {
+      "total_files": 29,
+      "total_index_records": 69,
+      "auto_clear": 66,
+      "human_review": 0,
+      "blocked": 3,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-538620_162035\\job_report.json"
+    },
+    "541433_168308": {
+      "total_files": 27,
+      "total_index_records": 69,
+      "auto_clear": 65,
+      "human_review": 1,
+      "blocked": 3,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-541433_168308\\job_report.json"
+    },
+    "546407_175628": {
+      "total_files": 26,
+      "total_index_records": 69,
+      "auto_clear": 65,
+      "human_review": 1,
+      "blocked": 3,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-546407_175628\\job_report.json"
+    },
+    "547053_155559": {
+      "total_files": 25,
+      "total_index_records": 69,
+      "auto_clear": 66,
+      "human_review": 1,
+      "blocked": 2,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-547053_155559\\job_report.json"
+    },
+    "547835_156740": {
+      "total_files": 25,
+      "total_index_records": 69,
+      "auto_clear": 66,
+      "human_review": 1,
+      "blocked": 2,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-547835_156740\\job_report.json"
+    },
+    "547960_159487": {
+      "total_files": 26,
+      "total_index_records": 69,
+      "auto_clear": 64,
+      "human_review": 3,
+      "blocked": 2,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-547960_159487\\job_report.json"
+    },
+    "548357_172783": {
+      "total_files": 31,
+      "total_index_records": 69,
+      "auto_clear": 64,
+      "human_review": 2,
+      "blocked": 3,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-548357_172783\\job_report.json"
+    },
+    "550782_169179": {
+      "total_files": 25,
+      "total_index_records": 69,
+      "auto_clear": 65,
+      "human_review": 2,
+      "blocked": 2,
+      "job_report_path": "d:\\Safedig_AG\\qa_output\\JOB-550782_169179\\job_report.json"
+    }
+  }
+}

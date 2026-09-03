@@ -1,0 +1,590 @@
+[
+  {
+    "index_record_id": "IDX-JOB-299208_172565-001",
+    "utility_name": "Cadent Gas",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-002",
+    "utility_name": "SGN",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-003",
+    "utility_name": "SSE Utility Solutions Limited",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-004",
+    "utility_name": "National Gas Transmission",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-005",
+    "document_id": "DOC-FIL-0002",
+    "filename": "42332090_WWU.pdf",
+    "utility_name": "Wales and West Utilities",
+    "utility_type": "Gas",
+    "upstream_claim": null,
+    "independent_findings_count": 0,
+    "reconciliation_outcome": "CONFIRMED_CLEAN",
+    "decision": "AUTO_CLEAR",
+    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "evidence_package_id": "PKG-DOC-FIL-0002",
+    "evidence_count": 2
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-006",
+    "utility_name": "ESP Utilities Group",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-007",
+    "document_id": "DOC-FIL-0004",
+    "filename": "GTC.pdf",
+    "utility_name": "GTC-Gas",
+    "utility_type": "Gas",
+    "upstream_claim": "No GTC plant has been found in this area",
+    "independent_findings_count": 0,
+    "reconciliation_outcome": "POSSIBLE_FALSE_POSITIVE",
+    "decision": "HUMAN_REVIEW",
+    "reason": "HUMAN REVIEW: Upstream claimed warning 'No GTC plant has been found in this area', but independent analysis found no intersecting assets.",
+    "evidence_package_id": "PKG-DOC-FIL-0004",
+    "evidence_count": 2
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-008",
+    "utility_name": "BOC Limited (A Member of the Linde Group)",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-009",
+    "utility_name": "Fulcrum Pipelines Limited",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-010",
+    "utility_name": "MUA Group Limited - Gas",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-011",
+    "utility_name": "Energy Assets Networks - Gas",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-012",
+    "utility_name": "Northern Gas Networks Limited",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-013",
+    "utility_name": "AWE Pipeline",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-014",
+    "utility_name": "Indigo Networks",
+    "utility_type": "Gas",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-015",
+    "utility_name": "UK Power Networks",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-016",
+    "document_id": "DOC-FIL-0001",
+    "filename": "42332090_NGED - Wales.pdf",
+    "utility_name": "National Grid Electricity Distribution",
+    "utility_type": "Electricity",
+    "upstream_claim": "There is a 11kV High Voltage Electricity Line in this Area |",
+    "independent_findings_count": 0,
+    "reconciliation_outcome": "POSSIBLE_FALSE_POSITIVE",
+    "decision": "HUMAN_REVIEW",
+    "reason": "HUMAN REVIEW: Upstream claimed warning 'There is a 11kV High Voltage Electricity Line in this Area |', but independent analysis found no intersecting assets.",
+    "evidence_package_id": "PKG-DOC-FIL-0001",
+    "evidence_count": 2
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-017",
+    "utility_name": "Scottish and Southern Electricity Networks",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-018",
+    "utility_name": "National Grid Electricity Transmission",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-019",
+    "utility_name": "Last Mile",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-020",
+    "utility_name": "TfL \u2013 London Underground HV Cables",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-021",
+    "utility_name": "SP Energy Networks",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-022",
+    "utility_name": "EirGrid",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-023",
+    "utility_name": "GTC-Electricity",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-024",
+    "utility_name": "MUA Group Limited - Electricity",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-025",
+    "utility_name": "Energy Assets Networks - Electricity",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-026",
+    "utility_name": "EDF Energy Renewables Ltd",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-027",
+    "utility_name": "Electricity North West Limited",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-028",
+    "utility_name": "UK Power Distribution",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-029",
+    "utility_name": "Uniper UK Ltd - Enfield",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-030",
+    "utility_name": "Trojan Energy Limited",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-031",
+    "utility_name": "Squire Energy Networks",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-032",
+    "utility_name": "Vattenfall",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-033",
+    "utility_name": "Fulcrum Electricity Assets Limited",
+    "utility_type": "Electricity",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-034",
+    "utility_name": "Essex & Suffolk Water",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-035",
+    "utility_name": "SES Water",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-036",
+    "utility_name": "Clean_Water",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-037",
+    "utility_name": "Waste_Water",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-038",
+    "document_id": "DOC-FIL-0012",
+    "filename": "W.pdf",
+    "utility_name": "Welsh Water",
+    "utility_type": "Water",
+    "upstream_claim": null,
+    "independent_findings_count": 0,
+    "reconciliation_outcome": "CONFIRMED_CLEAN",
+    "decision": "AUTO_CLEAR",
+    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "evidence_package_id": "PKG-DOC-FIL-0012",
+    "evidence_count": 2
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-039",
+    "utility_name": "Northumbrian Water Limited",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-040",
+    "utility_name": "GTC-Water",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-041",
+    "utility_name": "Yorkshire",
+    "utility_type": "Water",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-042",
+    "document_id": "DOC-FIL-0003",
+    "filename": "BT.pdf",
+    "utility_name": "BT",
+    "utility_type": "Telecom",
+    "upstream_claim": null,
+    "independent_findings_count": 0,
+    "reconciliation_outcome": "CONFIRMED_CLEAN",
+    "decision": "AUTO_CLEAR",
+    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "evidence_package_id": "PKG-DOC-FIL-0003",
+    "evidence_count": 2
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-043",
+    "utility_name": "Gigaclear Ltd",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-044",
+    "utility_name": "Zayo Group UK Ltd c/o JSM Group Ltd",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-045",
+    "utility_name": "EUNetworks Fiber UK Limited",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-046",
+    "utility_name": "EXA Infrastructure",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-047",
+    "utility_name": "Neos Networks",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-048",
+    "document_id": "DOC-FIL-0011",
+    "filename": "VM.pdf",
+    "utility_name": "VM",
+    "utility_type": "Telecom",
+    "upstream_claim": null,
+    "independent_findings_count": 0,
+    "reconciliation_outcome": "CONFIRMED_CLEAN",
+    "decision": "AUTO_CLEAR",
+    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "evidence_package_id": "PKG-DOC-FIL-0011",
+    "evidence_count": 2
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-049",
+    "utility_name": "Spectrum Fibre Limited T/AS Ogi",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-050",
+    "utility_name": "Concept Solutions People Ltd",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-051",
+    "utility_name": "G.Network Communication Ltd c/o JSM Group Ltd",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-052",
+    "utility_name": "Box Broadband Ltd",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-053",
+    "utility_name": "Tata Communications",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-054",
+    "utility_name": "AllPoints Fibre",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-055",
+    "utility_name": "Gamma",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-056",
+    "utility_name": "Voneus Limited",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-057",
+    "utility_name": "toob Limited",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-058",
+    "utility_name": "GTC-Fibre",
+    "utility_type": "Telecom",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-059",
+    "utility_name": "GTC-Heat",
+    "utility_type": "Heat",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-060",
+    "utility_name": "Pimlico District Heating Undertaking (PDHU)",
+    "utility_type": "Heat",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-061",
+    "utility_name": "Veolia ES SELCHP Limited",
+    "utility_type": "Heat",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-062",
+    "utility_name": "Veolia ES Sheffield Ltd",
+    "utility_type": "Heat",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-063",
+    "utility_name": "Esso Petroleum Company Limited",
+    "utility_type": "Petroleum",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-064",
+    "utility_name": "Exolum Pipeline System",
+    "utility_type": "Petroleum",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-065",
+    "utility_name": "Mainline Pipelines Limited",
+    "utility_type": "Petroleum",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-066",
+    "utility_name": "BPA",
+    "utility_type": "Petroleum",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-067",
+    "utility_name": "Toilet Map",
+    "utility_type": "Toilet",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-068",
+    "utility_name": "Hospital Map",
+    "utility_type": "Hospital",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  },
+  {
+    "index_record_id": "IDX-JOB-299208_172565-069",
+    "utility_name": "COSHH",
+    "utility_type": "COSHH",
+    "status": "No",
+    "decision": "AUTO_CLEAR",
+    "reason": "Utility reported no assets in the enquiry area (Status='No')."
+  }
+]

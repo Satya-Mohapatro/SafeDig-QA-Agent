@@ -1,0 +1,15 @@
+[
+  {
+    "index_record_id": "IDX-001",
+    "document_id": "DOC-FIL-0001",
+    "filename": "map.pdf",
+    "utility_name": "SGN",
+    "utility_type": "Gas",
+    "decision": "AUTO_CLEAR",
+    "reason": "Human Reviewer (QA_ENGINEER_7) rejected false alarm: Verified map; asset lies outside buffer zone.",
+    "human_disposition": "REJECT_WARNING",
+    "reviewer_id": "QA_ENGINEER_7",
+    "reviewer_comment": "Verified map; asset lies outside buffer zone.",
+    "disposition_timestamp": "2026-09-03T14:44:37.099262"
+  }
+]

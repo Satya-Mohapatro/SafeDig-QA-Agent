@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeDig — AI Map QA & Validation Console</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/styles.css?v=1.1.1">
+
+
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased">
+
+  <!-- TOP NAVIGATION BAR -->
+  <header class="bg-slate-800/90 border-b border-slate-700/80 sticky top-0 z-50 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      
+      <!-- Brand & Version -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <i data-lucide="shield-check" class="w-6 h-6 text-white"></i>
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-lg font-bold tracking-tight text-white">SafeDig <span class="text-blue-400 font-semibold">QA Console</span></h1>
+            <span class="px-2 py-0.5 text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full">v1.0.0</span>
+          </div>
+          <p class="text-xs text-slate-400">Enterprise AI Map QA & Validation Platform</p>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex space-x-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700/50">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="nav-tab active px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center space-x-1.5 text-white bg-blue-600 shadow-sm">
+          <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i>
+          <span>Dashboard</span>
+        </button>
+        <button onclick="switchTab('maps')" id="tab-maps" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+          <i data-lucide="table" class="w-3.5 h-3.5"></i>
+          <span>Map Results</span>
+          <span id="maps-badge" class="ml-1 px-1.5 py-0.2 bg-blue-500/20 text-blue-300 text-[10px] font-bold rounded-full border border-blue-500/30 hidden">0</span>
+        </button>
+        <button onclick="switchTab('queue')" id="tab-queue" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+          <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
+          <span>QA Queue</span>
+          <span id="queue-badge" class="ml-1 px-1.5 py-0.2 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded-full border border-amber-500/30">0</span>
+        </button>
+        <button onclick="switchTab('workspace')" id="tab-workspace" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+          <i data-lucide="map" class="w-3.5 h-3.5"></i>
+          <span>Map QA Workspace</span>
+        </button>
+        <button onclick="switchTab('catalogue')" id="tab-catalogue" class="nav-tab px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center space-x-1.5">
+          <i data-lucide="book-open" class="w-3.5 h-3.5"></i>
+          <span>Warnings & Legends</span>
+        </button>
+      </nav>
+
+      <!-- System Health Badge -->
+      <div class="flex items-center space-x-3 text-xs text-slate-400">
+        <div class="flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="font-medium">System Active</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 1: DASHBOARD & JOB SUBMISSION -->
+    <!-- ===================================================================== -->
+    <section id="view-dashboard" class="space-y-6">
+      
+      <!-- Top Job Submission Banner -->
+      <div class="bg-gradient-to-r from-slate-800 via-slate-800 to-indigo-950/40 border border-slate-700/80 rounded-2xl p-6 shadow-xl">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-white flex items-center gap-2">
+              <i data-lucide="folder-plus" class="w-5 h-5 text-blue-400"></i>
+              Execute Map QA Pipeline
+            </h2>
+            <p class="text-xs text-slate-400 mt-1">Submit an enquiry root folder to discover files, parse Excel, run CV/spatial engine, and evaluate 17 release gates.</p>
+          </div>
+          
+          <!-- Sample Presets -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-400 font-medium">Quick Preset:</span>
+            <select id="preset-select" onchange="applyPreset()" class="bg-slate-900 border border-slate-700 text-xs text-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500">
+              <option value="d:/Safedig_AG/Data/244414_201678">Folder 244414_201678 (69 recs)</option>
+              <option value="d:/Safedig_AG/Data/299208_172565">Folder 299208_172565 (69 recs)</option>
+              <option value="d:/Safedig_AG/Data/534668_175407">Folder 534668_175407 (69 recs)</option>
+              <option value="d:/Safedig_AG/Data/536294_179488">Folder 536294_179488 (69 recs)</option>
+              <option value="d:/Safedig_AG/Data/550782_169179">Folder 550782_169179 (69 recs)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="mt-4 flex flex-col sm:flex-row items-center gap-3">
+          <div class="relative flex-1 w-full">
+            <i data-lucide="folder" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input type="text" id="root-dir-input" value="d:/Safedig_AG/Data/244414_201678" oninput="onFolderInputChange()" placeholder="Absolute folder path (e.g. d:/Safedig_AG/Data/244414_201678)" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+          <button onclick="submitJob()" id="btn-submit-job" class="w-full sm:w-auto px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-lg shadow-blue-500/25 transition-all flex items-center justify-center space-x-2">
+            <i data-lucide="play" class="w-4 h-4"></i>
+            <span>Run QA Pipeline</span>
+          </button>
+        </div>
+
+        <!-- Target Folder Dynamic Status Card -->
+        <div id="target-folder-card" class="mt-4 bg-slate-900/90 border border-slate-700/80 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 transition-all">
+          <div class="flex items-center space-x-3">
+            <div id="target-folder-icon" class="w-8 h-8 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center">
+              <i data-lucide="folder-check" class="w-4 h-4"></i>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span id="target-folder-name" class="text-xs font-bold text-white font-mono">Selected: Folder 244414_201678</span>
+                <span id="target-folder-status" class="px-2 py-0.2 text-[10px] font-semibold rounded-full bg-blue-500/20 text-blue-300">Ready</span>
+              </div>
+              <p id="target-folder-desc" class="text-[11px] text-slate-400 mt-0.5">Click 'Run QA Pipeline' to execute deterministic verification.</p>
+            </div>
+          </div>
+          <div id="target-folder-actions" class="flex items-center space-x-2">
+            <!-- Dynamically populated action button -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Metric Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Total Processed</span>
+            <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-white" id="stat-total">0</div>
+          <p class="text-[11px] text-slate-400 mt-0.5">Across project jobs</p>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-emerald-400">Auto-Clear Rate</span>
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="check-circle" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-emerald-400" id="stat-autoclear">0%</div>
+          <p class="text-[11px] text-slate-400 mt-0.5"><span id="stat-autoclear-count">0</span> records cleared safely</p>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-amber-400">Human Review Rate</span>
+            <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-amber-400" id="stat-review">0%</div>
+          <p class="text-[11px] text-slate-400 mt-0.5"><span id="stat-review-count">0</span> flagged for QA signoff</p>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-rose-400">Blocked Rate</span>
+            <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
+              <i data-lucide="ban" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 text-2xl font-bold text-rose-400" id="stat-blocked">0%</div>
+          <p class="text-[11px] text-slate-400 mt-0.5"><span id="stat-blocked-count">0</span> missing mandatory maps</p>
+        </div>
+      </div>
+
+      <!-- Recent Jobs Table -->
+      <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl shadow-sm overflow-hidden">
+        <div class="p-4 border-b border-slate-700/60 flex items-center justify-between">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
+            <i data-lucide="folder-open" class="w-4 h-4 text-blue-400"></i>
+            Processed Jobs (Directory Level)
+            <span class="text-xs text-slate-500 font-normal ml-1">— click "View All Maps" to see individual results</span>
+          </h3>
+          <div class="flex items-center space-x-2">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+              <input type="text" id="job-search-input" oninput="filterJobsTable()" placeholder="Filter jobs..." class="bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500 w-44">
+            </div>
+            <button onclick="loadRecentJobs()" class="text-xs text-blue-400 hover:text-blue-300 font-medium flex items-center gap-1">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-700/50">
+              <tr>
+                <th class="py-3 px-4">Job / Directory</th>
+                <th class="py-3 px-4 text-center">Total Maps</th>
+                <th class="py-3 px-4 text-center text-emerald-400">Auto-Clear</th>
+                <th class="py-3 px-4 text-center text-amber-400">Review</th>
+                <th class="py-3 px-4 text-center text-rose-400">Blocked</th>
+                <th class="py-3 px-4">Aggregate Decision</th>
+                <th class="py-3 px-4 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="jobs-table-body" class="divide-y divide-slate-700/40">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 1b: MAP RESULTS — Individual Map Level QA Table -->
+    <!-- ===================================================================== -->
+    <section id="view-maps" class="space-y-4 hidden">
+
+      <!-- Breadcrumb Header -->
+      <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div class="flex items-center space-x-3">
+          <button onclick="switchTab('dashboard')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 transition-all">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <div class="flex items-center space-x-2">
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="table" class="w-4 h-4 text-blue-400"></i>
+                Individual Map QA Results
+              </h2>
+              <span id="maps-job-badge" class="px-2 py-0.5 text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30 rounded-full font-mono">--</span>
+              <span id="maps-decision-badge" class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-slate-700 text-slate-300">--</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Every individual map/document processed in this job — filter, search, sort and inspect each result independently.</p>
+          </div>
+        </div>
+        <!-- Per-job aggregate mini-stats -->
+        <div class="flex items-center gap-3 text-xs">
+          <div class="bg-slate-900/60 border border-slate-700/50 rounded-xl px-3 py-2 text-center">
+            <div class="text-slate-400 text-[10px] uppercase">Total Maps</div>
+            <div class="font-bold text-white text-sm mt-0.5" id="maps-stat-total">0</div>
+          </div>
+          <div class="bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3 py-2 text-center">
+            <div class="text-emerald-400 text-[10px] uppercase">Auto-Clear</div>
+            <div class="font-bold text-emerald-400 text-sm mt-0.5" id="maps-stat-ac">0</div>
+          </div>
+          <div class="bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-center">
+            <div class="text-amber-400 text-[10px] uppercase">Review</div>
+            <div class="font-bold text-amber-400 text-sm mt-0.5" id="maps-stat-hr">0</div>
+          </div>
+          <div class="bg-rose-500/10 border border-rose-500/20 rounded-xl px-3 py-2 text-center">
+            <div class="text-rose-400 text-[10px] uppercase">Blocked</div>
+            <div class="font-bold text-rose-400 text-sm mt-0.5" id="maps-stat-bl">0</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filter / Search / Sort Bar -->
+      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-3 flex flex-wrap items-center gap-3">
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-slate-400 uppercase font-semibold">Filter:</span>
+          <button onclick="filterMaps('ALL')" id="filter-btn-all" class="map-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold bg-blue-600 text-white border border-blue-500">All</button>
+          <button onclick="filterMaps('AUTO_CLEAR')" id="filter-btn-AUTO_CLEAR" class="map-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-emerald-400 border border-slate-600 hover:bg-emerald-500/20">Auto-Clear</button>
+          <button onclick="filterMaps('HUMAN_REVIEW')" id="filter-btn-HUMAN_REVIEW" class="map-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-amber-400 border border-slate-600 hover:bg-amber-500/20">Human Review</button>
+          <button onclick="filterMaps('BLOCKED')" id="filter-btn-BLOCKED" class="map-filter-btn px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-700 text-rose-400 border border-slate-600 hover:bg-rose-500/20">Blocked</button>
+        </div>
+        <div class="relative flex-1 min-w-[220px]">
+          <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2"></i>
+          <input type="text" id="maps-search-input" oninput="applyMapFilters()" placeholder="Search filename, provider, index ID, utility type..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500">
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-slate-400 uppercase font-semibold">Sort:</span>
+          <select id="maps-sort-select" onchange="applyMapFilters()" class="bg-slate-900 border border-slate-700 text-[10px] text-slate-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-blue-500">
+            <option value="decision-desc">Decision (Blocked first)</option>
+            <option value="decision-asc">Decision (Clear first)</option>
+            <option value="provider-asc">Provider A→Z</option>
+            <option value="filename-asc">Filename A→Z</option>
+            <option value="warnings-desc">Warning Count ↓</option>
+          </select>
+        </div>
+        <span id="maps-count-label" class="text-[10px] text-slate-400 ml-auto">0 maps shown</span>
+      </div>
+
+      <!-- Individual Maps Table -->
+      <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-700/50">
+              <tr>
+                <th class="py-3 px-3">Map / Filename</th>
+                <th class="py-3 px-3">Index Ref</th>
+                <th class="py-3 px-3">Provider</th>
+                <th class="py-3 px-3">Utility</th>
+                <th class="py-3 px-3 text-center">Proc. Status</th>
+                <th class="py-3 px-3">Final QA Decision</th>
+                <th class="py-3 px-3">Upstream Result</th>
+                <th class="py-3 px-3">Independent QA</th>
+                <th class="py-3 px-3 text-center">Warn.</th>
+                <th class="py-3 px-3 text-center">Evid.</th>
+                <th class="py-3 px-3">Reason</th>
+                <th class="py-3 px-3">Review Status</th>
+                <th class="py-3 px-3 text-right">Action</th>
+              </tr>
+
+            </thead>
+            <tbody id="maps-table-body" class="divide-y divide-slate-700/40">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 2: QA REVIEW QUEUE -->
+    <!-- ===================================================================== -->
+    <section id="view-queue" class="space-y-6 hidden">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-white flex items-center gap-2">
+            <i data-lucide="inbox" class="w-5 h-5 text-amber-400"></i>
+            Human Review Queue
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">Cases flagged by Policy Engine for missed hazard discovery, upstream false-positive verification, or legend discrepancy.</p>
+        </div>
+        <button onclick="loadQueue()" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-xs font-medium text-slate-200 flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Queue
+        </button>
+      </div>
+
+      <!-- Queue Table -->
+      <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/60 text-slate-400 uppercase text-[10px] font-semibold border-b border-slate-700/50">
+              <tr>
+                <th class="py-3 px-4">Document / File</th>
+                <th class="py-3 px-4">Provider</th>
+                <th class="py-3 px-4">Upstream Claim</th>
+                <th class="py-3 px-4">Independent Finding</th>
+                <th class="py-3 px-4">Outcome</th>
+                <th class="py-3 px-4">Escalation Reason</th>
+                <th class="py-3 px-4 text-right">Inspect</th>
+              </tr>
+            </thead>
+            <tbody id="queue-table-body" class="divide-y divide-slate-700/40">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 3: MAP QA REVIEW WORKSPACE (CORE PRODUCT SCREEN) -->
+    <!-- ===================================================================== -->
+    <section id="view-workspace" class="space-y-4 hidden">
+      
+      <!-- Workspace Header -->
+      <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-3 shadow-md">
+        <div class="flex items-center space-x-3">
+          <button onclick="switchTab('queue')" class="p-1.5 bg-slate-700 hover:bg-slate-600 rounded-lg text-slate-300 transition-all">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          </button>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span id="ws-filename" class="text-sm font-bold text-white font-mono">Select a Document</span>
+              <span id="ws-badge-outcome" class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-700 text-slate-300">Outcome</span>
+              <span id="ws-badge-decision" class="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-slate-700 text-slate-300">Decision</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5"><span id="ws-provider" class="font-medium text-slate-300">--</span> (<span id="ws-utility" class="text-slate-400">--</span>) | Job: <span id="ws-job-id" class="text-blue-400 font-mono">--</span></p>
+          </div>
+        </div>
+
+        <div class="flex items-center space-x-2">
+          <span class="text-xs text-slate-400">Reviewer ID:</span>
+          <input type="text" id="reviewer-id-input" value="QA_LEAD_USER" class="bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none focus:ring-1 focus:ring-blue-500 w-32">
+        </div>
+      </div>
+
+      <!-- Split Layout: Left Canvas / Right Analysis -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        
+        <!-- LEFT PANEL: Visual Evidence & AOI (7 Cols) -->
+        <div class="lg:col-span-7 space-y-4">
+          
+          <!-- Evidence Crop Viewer Card -->
+          <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-700/50 pb-2.5">
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i data-lucide="image" class="w-4 h-4 text-blue-400"></i>
+                Visual Evidence Crop & Hazard Boundary
+              </h4>
+              <span class="text-[11px] text-slate-400">300 DPI Native Rendering</span>
+            </div>
+
+            <!-- Image Viewport -->
+            <div class="relative bg-slate-950 rounded-xl border border-slate-800 min-h-[380px] flex items-center justify-center overflow-hidden group">
+              <img id="ws-evidence-image" src="" alt="Select document from queue to view evidence" class="max-h-[460px] w-auto object-contain transition-transform duration-200">
+              <div id="ws-image-placeholder" class="text-center p-6 text-slate-500 text-xs">
+                <i data-lucide="map-pin" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>
+                No crop selected. Choose an item from the QA Queue to inspect evidence.
+              </div>
+            </div>
+          </div>
+
+          <!-- AOI & PDF Metadata Card -->
+          <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm space-y-2.5">
+            <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="compass" class="w-4 h-4 text-indigo-400"></i>
+              Area of Interest (AOI) & Document Metadata
+            </h4>
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+              <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700/40">
+                <span class="text-[10px] text-slate-400 uppercase">AOI Method</span>
+                <p id="ws-aoi-method" class="font-semibold text-slate-200 mt-0.5">--</p>
+              </div>
+              <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700/40">
+                <span class="text-[10px] text-slate-400 uppercase">AOI Confidence</span>
+                <p id="ws-aoi-conf" class="font-semibold text-slate-200 mt-0.5">--</p>
+              </div>
+              <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700/40">
+                <span class="text-[10px] text-slate-400 uppercase">Modality</span>
+                <p id="ws-modality" class="font-semibold text-slate-200 mt-0.5">--</p>
+              </div>
+              <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700/40">
+                <span class="text-[10px] text-slate-400 uppercase">Pages</span>
+                <p id="ws-pages" class="font-semibold text-slate-200 mt-0.5">--</p>
+              </div>
+            </div>
+            <div class="bg-slate-900/60 p-2 rounded-lg border border-slate-700/40 text-[11px] font-mono text-slate-400 truncate" id="ws-aoi-bbox">
+              Bounding Box: --
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT PANEL: Analysis, Advisory & Human Controls (5 Cols) -->
+        <div class="lg:col-span-5 space-y-4">
+          
+          <!-- Reconciliation Diff Card -->
+          <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-4 shadow-sm space-y-2.5">
+            <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="git-compare" class="w-4 h-4 text-purple-400"></i>
+              Reconciliation Findings
+            </h4>
+            <div class="space-y-2 text-xs">
+              <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-700/50">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Upstream Claim:</span>
+                <p id="ws-upstream-claim" class="text-slate-200 font-medium mt-0.5 italic">None</p>
+              </div>
+              <div class="bg-slate-900/70 p-2.5 rounded-xl border border-slate-700/50">
+                <span class="text-[10px] uppercase font-bold text-slate-400">Independent Scan Discovery:</span>
+                <div id="ws-indep-findings" class="mt-1 space-y-1">
+                  <!-- Detections list -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advisory Copilot Briefing Card -->
+          <div class="bg-gradient-to-br from-slate-800 to-indigo-950/40 border border-indigo-500/30 rounded-2xl p-4 shadow-sm space-y-2">
+            <div class="flex items-center justify-between">
+              <h4 class="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                <i data-lucide="bot" class="w-4 h-4 text-indigo-400"></i>
+                Advisory QA Briefing (Copilot)
+              </h4>
+              <span id="ws-adv-model" class="text-[10px] font-mono bg-indigo-500/20 text-indigo-300 px-1.5 py-0.5 rounded">Advisory</span>
+            </div>
+            <p id="ws-adv-summary" class="text-xs text-slate-200 leading-relaxed font-medium">No advisory briefing loaded.</p>
+            <div id="ws-adv-contradictions" class="space-y-1 text-[11px] text-amber-300 bg-amber-500/10 p-2 rounded-lg border border-amber-500/20 hidden">
+              <!-- Contradictions -->
+            </div>
+          </div>
+
+          <!-- 17 Policy Gates Matrix (Collapsible) -->
+          <div class="bg-slate-800/80 border border-slate-700/70 rounded-2xl p-3.5 shadow-sm space-y-2">
+            <div class="flex items-center justify-between cursor-pointer" onclick="toggleGatesMatrix()">
+              <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i data-lucide="check-square" class="w-4 h-4 text-emerald-400"></i>
+                17 Policy Gates Breakdown
+              </h4>
+              <i data-lucide="chevron-down" id="gates-chevron" class="w-4 h-4 text-slate-400 transition-transform"></i>
+            </div>
+            <div id="ws-gates-container" class="space-y-1 max-h-40 overflow-y-auto pr-1 hidden">
+              <!-- Gate list -->
+            </div>
+          </div>
+
+          <!-- Human Disposition Action Box -->
+          <div class="bg-slate-800/90 border border-slate-700/80 rounded-2xl p-4 shadow-lg space-y-3">
+            <h4 class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i data-lucide="user-check" class="w-4 h-4 text-blue-400"></i>
+              Human Disposition Decision
+            </h4>
+
+            <div>
+              <label class="text-[11px] text-slate-400 block mb-1">Reviewer Justification Note:</label>
+              <textarea id="disposition-comment" rows="2" placeholder="State reason for action (e.g. 'Verified drawing vector geometry confirms HP line')..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-blue-500"></textarea>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <button onclick="applyDisposition('CONFIRM_WARNING')" class="px-3 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 shadow-sm transition-all">
+                <i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i> Confirm Warning
+              </button>
+              <button onclick="applyDisposition('REJECT_WARNING')" class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 shadow-sm transition-all">
+                <i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> Reject False Alarm
+              </button>
+              <button onclick="applyDisposition('BLOCK')" class="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 rounded-xl text-xs font-semibold flex items-center justify-center gap-1 shadow-sm transition-all">
+                <i data-lucide="ban" class="w-3.5 h-3.5"></i> Block Release
+              </button>
+              <button onclick="applyDisposition('REQUEST_SECOND_REVIEW')" class="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold flex items-center justify-center gap-1 shadow-sm transition-all">
+                <i data-lucide="users" class="w-3.5 h-3.5"></i> Request 2nd Review
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- VIEW 4: WARNING CATALOGUE & LEGEND EXPLORER -->
+    <!-- ===================================================================== -->
+    <section id="view-catalogue" class="space-y-6 hidden">
+      <div>
+        <h2 class="text-xl font-bold text-white flex items-center gap-2">
+          <i data-lucide="book-open" class="w-5 h-5 text-blue-400"></i>
+          Authoritative Warning Catalogue & Legend Registry
+        </h2>
+        <p class="text-xs text-slate-400 mt-1">44 authoritative business warning definitions and 8 multi-utility provider symbology profiles.</p>
+      </div>
+
+      <!-- Providers Cards Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">SGN</span>
+            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-[10px] font-bold rounded-full">Gas</span>
+          </div>
+          <p class="text-[11px] text-slate-400">3 Warning Features (HP / MP / LP Gas Mains)</p>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">UK Power Networks</span>
+            <span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded-full">Electricity</span>
+          </div>
+          <p class="text-[11px] text-slate-400">2 Warning Features (High Voltage & Low Voltage)</p>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Cadent Gas</span>
+            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-[10px] font-bold rounded-full">Gas</span>
+          </div>
+          <p class="text-[11px] text-slate-400">2 Warning Features (High Pressure & Intermediate)</p>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-bold text-white">Water Networks</span>
+            <span class="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold rounded-full">Water</span>
+          </div>
+          <p class="text-[11px] text-slate-400">Potable Trunk Mains & Sewer Foul/Surface</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+  <!-- Main JavaScript Application -->
+  <script src="/static/app.js?v=1.1.1"></script>
+
+  <script>
+    lucide.createIcons();
+  </script>
+
+</body>
+</html>

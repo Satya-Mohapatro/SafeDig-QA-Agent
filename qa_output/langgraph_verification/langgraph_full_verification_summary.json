@@ -1,0 +1,154 @@
+{
+  "total_folders": 13,
+  "total_records_processed": 897,
+  "auto_clear_count": 847,
+  "human_review_count": 21,
+  "blocked_count": 29,
+  "advisories_generated": 21,
+  "folders": {
+    "244414_201678": {
+      "job_id": "LANGGRAPH-244414_201678",
+      "total_records": 69,
+      "auto_clear": 67,
+      "human_review": 2,
+      "blocked": 0,
+      "overall_decision": "HUMAN_REVIEW",
+      "queue_size": 2,
+      "advisories_count": 2,
+      "reports_valid": true
+    },
+    "299208_172565": {
+      "job_id": "LANGGRAPH-299208_172565",
+      "total_records": 69,
+      "auto_clear": 67,
+      "human_review": 2,
+      "blocked": 0,
+      "overall_decision": "HUMAN_REVIEW",
+      "queue_size": 2,
+      "advisories_count": 2,
+      "reports_valid": true
+    },
+    "534668_175407": {
+      "job_id": "LANGGRAPH-534668_175407",
+      "total_records": 69,
+      "auto_clear": 63,
+      "human_review": 2,
+      "blocked": 4,
+      "overall_decision": "BLOCKED",
+      "queue_size": 2,
+      "advisories_count": 2,
+      "reports_valid": true
+    },
+    "536294_179488": {
+      "job_id": "LANGGRAPH-536294_179488",
+      "total_records": 69,
+      "auto_clear": 63,
+      "human_review": 3,
+      "blocked": 3,
+      "overall_decision": "BLOCKED",
+      "queue_size": 3,
+      "advisories_count": 3,
+      "reports_valid": true
+    },
+    "538189_165956": {
+      "job_id": "LANGGRAPH-538189_165956",
+      "total_records": 69,
+      "auto_clear": 66,
+      "human_review": 1,
+      "blocked": 2,
+      "overall_decision": "BLOCKED",
+      "queue_size": 1,
+      "advisories_count": 1,
+      "reports_valid": true
+    },
+    "538620_162035": {
+      "job_id": "LANGGRAPH-538620_162035",
+      "total_records": 69,
+      "auto_clear": 66,
+      "human_review": 0,
+      "blocked": 3,
+      "overall_decision": "BLOCKED",
+      "queue_size": 0,
+      "advisories_count": 0,
+      "reports_valid": true
+    },
+    "541433_168308": {
+      "job_id": "LANGGRAPH-541433_168308",
+      "total_records": 69,
+      "auto_clear": 65,
+      "human_review": 1,
+      "blocked": 3,
+      "overall_decision": "BLOCKED",
+      "queue_size": 1,
+      "advisories_count": 1,
+      "reports_valid": true
+    },
+    "546407_175628": {
+      "job_id": "LANGGRAPH-546407_175628",
+      "total_records": 69,
+      "auto_clear": 65,
+      "human_review": 1,
+      "blocked": 3,
+      "overall_decision": "BLOCKED",
+      "queue_size": 1,
+      "advisories_count": 1,
+      "reports_valid": true
+    },
+    "547053_155559": {
+      "job_id": "LANGGRAPH-547053_155559",
+      "total_records": 69,
+      "auto_clear": 66,
+      "human_review": 1,
+      "blocked": 2,
+      "overall_decision": "BLOCKED",
+      "queue_size": 1,
+      "advisories_count": 1,
+      "reports_valid": true
+    },
+    "547835_156740": {
+      "job_id": "LANGGRAPH-547835_156740",
+      "total_records": 69,
+      "auto_clear": 66,
+      "human_review": 1,
+      "blocked": 2,
+      "overall_decision": "BLOCKED",
+      "queue_size": 1,
+      "advisories_count": 1,
+      "reports_valid": true
+    },
+    "547960_159487": {
+      "job_id": "LANGGRAPH-547960_159487",
+      "total_records": 69,
+      "auto_clear": 64,
+      "human_review": 3,
+      "blocked": 2,
+      "overall_decision": "BLOCKED",
+      "queue_size": 3,
+      "advisories_count": 3,
+      "reports_valid": true
+    },
+    "548357_172783": {
+      "job_id": "LANGGRAPH-548357_172783",
+      "total_records": 69,
+      "auto_clear": 64,
+      "human_review": 2,
+      "blocked": 3,
+      "overall_decision": "BLOCKED",
+      "queue_size": 2,
+      "advisories_count": 2,
+      "reports_valid": true
+    },
+    "550782_169179": {
+      "job_id": "LANGGRAPH-550782_169179",
+      "total_records": 69,
+      "auto_clear": 65,
+      "human_review": 2,
+      "blocked": 2,
+      "overall_decision": "BLOCKED",
+      "queue_size": 2,
+      "advisories_count": 2,
+      "reports_valid": true
+    }
+  },
+  "total_duration_seconds": 155.7
+}

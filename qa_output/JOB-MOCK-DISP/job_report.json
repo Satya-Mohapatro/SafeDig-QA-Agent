@@ -1,0 +1,11 @@
+{
+  "job_id": "JOB-MOCK-DISP",
+  "overall_decision": "AUTO_CLEAR",
+  "generated_at": "2026-09-01T20:00:00",
+  "summary": {
+    "total_records": 1,
+    "auto_clear": 1,
+    "human_review": 0,
+    "blocked": 0
+  }
+}

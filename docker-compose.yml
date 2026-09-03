@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  safedig-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: safedig-map-qa
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount Data directory as read-only for security and immutability
+      - ./Data:/app/Data:ro
+      # Mount output directory as persistent read-write
+      - ./qa_output:/app/qa_output:rw
+      # Mount SQLite database file as persistent read-write
+      - ./safedig.db:/app/safedig.db:rw
+    environment:
+      - SAFEDIG_OUTPUT_DIR=/app/qa_output
+      - SAFEDIG_SQLITE_URL=sqlite+aiosqlite:////app/safedig.db
+      - SAFEDIG_ENGINE_VERSION=1.0.0
+      - SAFEDIG_POLICY_VERSION=1.0.0
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

@@ -1,0 +1,104 @@
+{
+  "run_id": "BENCH-F41FB382",
+  "timestamp": "2026-09-02T14:18:17.104908",
+  "engine_version": "1.0.0",
+  "policy_version": "1.0.0",
+  "total_cases_evaluated": 4,
+  "safety_compliance_passed": true,
+  "metrics": {
+    "total_cases": 4,
+    "decision_accuracy": 100.0,
+    "outcome_accuracy": 100.0,
+    "precision": 100.0,
+    "recall": 100.0,
+    "f1_score": 100.0,
+    "escaped_hazard_count": 0,
+    "decision_confusion_matrix": {
+      "HUMAN_REVIEW": {
+        "HUMAN_REVIEW": 2
+      },
+      "AUTO_CLEAR": {
+        "AUTO_CLEAR": 2
+      }
+    },
+    "outcome_confusion_matrix": {
+      "MISSED_WARNING": {
+        "MISSED_WARNING": 1
+      },
+      "POSSIBLE_FALSE_POSITIVE": {
+        "POSSIBLE_FALSE_POSITIVE": 1
+      },
+      "CONFIRMED_CLEAN": {
+        "CONFIRMED_CLEAN": 2
+      }
+    },
+    "provider_accuracy": {
+      "Wales and West Utilities": 100.0,
+      "GTC-Gas": 100.0,
+      "National Grid Electricity Distribution": 100.0,
+      "BT": 100.0
+    }
+  },
+  "case_results": [
+    {
+      "case_id": "GT-244414-WWU",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0002",
+      "filename": "42332089_WWU.pdf",
+      "utility_name": "Wales and West Utilities",
+      "expected_decision": "HUMAN_REVIEW",
+      "actual_decision": "HUMAN_REVIEW",
+      "expected_outcome": "MISSED_WARNING",
+      "actual_outcome": "MISSED_WARNING",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected High Pressure Gas Line"
+    },
+    {
+      "case_id": "GT-244414-GTC",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0004",
+      "filename": "GTC.pdf",
+      "utility_name": "GTC-Gas",
+      "expected_decision": "HUMAN_REVIEW",
+      "actual_decision": "HUMAN_REVIEW",
+      "expected_outcome": "POSSIBLE_FALSE_POSITIVE",
+      "actual_outcome": "POSSIBLE_FALSE_POSITIVE",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "HUMAN REVIEW: Upstream claimed warning 'No GTC plant has been found in this area', but independent analysis found no intersecting assets."
+    },
+    {
+      "case_id": "GT-244414-NGED",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0001",
+      "filename": "42332089_NGED - Wales.pdf",
+      "utility_name": "National Grid Electricity Distribution",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-244414-BT",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0003",
+      "filename": "BT.pdf",
+      "utility_name": "BT",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    }
+  ]
+}

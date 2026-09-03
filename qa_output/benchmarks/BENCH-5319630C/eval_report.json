@@ -1,0 +1,166 @@
+{
+  "run_id": "BENCH-5319630C",
+  "timestamp": "2026-09-03T14:44:25.012924",
+  "engine_version": "1.0.0",
+  "policy_version": "1.0.0",
+  "total_cases_evaluated": 8,
+  "safety_compliance_passed": true,
+  "metrics": {
+    "total_cases": 8,
+    "decision_accuracy": 87.5,
+    "outcome_accuracy": 87.5,
+    "precision": 100.0,
+    "recall": 50.0,
+    "f1_score": 66.7,
+    "escaped_hazard_count": 0,
+    "decision_confusion_matrix": {
+      "AUTO_CLEAR": {
+        "AUTO_CLEAR": 6
+      },
+      "HUMAN_REVIEW": {
+        "HUMAN_REVIEW": 1,
+        "AUTO_CLEAR": 1
+      }
+    },
+    "outcome_confusion_matrix": {
+      "CONFIRMED_CLEAN": {
+        "CONFIRMED_CLEAN": 6
+      },
+      "POSSIBLE_FALSE_POSITIVE": {
+        "POSSIBLE_FALSE_POSITIVE": 1,
+        "MATCH": 1
+      }
+    },
+    "provider_accuracy": {
+      "Wales and West Utilities": 100.0,
+      "GTC-Gas": 100.0,
+      "National Grid Electricity Distribution": 100.0,
+      "BT": 100.0,
+      "VM": 100.0,
+      "Welsh Water": 100.0,
+      "Clean_Water": 0.0
+    }
+  },
+  "case_results": [
+    {
+      "case_id": "GT-244414-WWU",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0002",
+      "filename": "42332089_WWU.pdf",
+      "utility_name": "Wales and West Utilities",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-244414-GTC",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0004",
+      "filename": "GTC.pdf",
+      "utility_name": "GTC-Gas",
+      "expected_decision": "HUMAN_REVIEW",
+      "actual_decision": "HUMAN_REVIEW",
+      "expected_outcome": "POSSIBLE_FALSE_POSITIVE",
+      "actual_outcome": "POSSIBLE_FALSE_POSITIVE",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "HUMAN REVIEW: Upstream claimed warning 'No GTC plant has been found in this area', but independent analysis found no intersecting assets."
+    },
+    {
+      "case_id": "GT-244414-NGED",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0001",
+      "filename": "42332089_NGED - Wales.pdf",
+      "utility_name": "National Grid Electricity Distribution",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-244414-BT",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0003",
+      "filename": "BT.pdf",
+      "utility_name": "BT",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-244414-VM",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0011",
+      "filename": "VM.pdf",
+      "utility_name": "VM",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-244414-WATER",
+      "job_id": "JOB-244414_201678",
+      "document_id": "DOC-FIL-0012",
+      "filename": "W.pdf",
+      "utility_name": "Welsh Water",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-534668-VM",
+      "job_id": "JOB-534668_175407",
+      "document_id": "DOC-FIL-0027",
+      "filename": "VM.pdf",
+      "utility_name": "VM",
+      "expected_decision": "AUTO_CLEAR",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "CONFIRMED_CLEAN",
+      "actual_outcome": "CONFIRMED_CLEAN",
+      "is_decision_match": true,
+      "is_outcome_match": true,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    },
+    {
+      "case_id": "GT-550782-CLEAN-WATER",
+      "job_id": "JOB-550782_169179",
+      "document_id": "DOC-FIL-0006",
+      "filename": "Clean_Water.pdf",
+      "utility_name": "Clean_Water",
+      "expected_decision": "HUMAN_REVIEW",
+      "actual_decision": "AUTO_CLEAR",
+      "expected_outcome": "POSSIBLE_FALSE_POSITIVE",
+      "actual_outcome": "MATCH",
+      "is_decision_match": false,
+      "is_outcome_match": false,
+      "is_escaped_hazard": false,
+      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete."
+    }
+  ]
+}
