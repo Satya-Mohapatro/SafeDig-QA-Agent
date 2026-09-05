@@ -1,6 +1,11 @@
 import os
+from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import Field
+
+# Dynamically determine project root relative to this file:
+# src/config/settings.py -> parent: config -> parent.parent: src -> parent.parent.parent: Project Root
+_DEFAULT_PROJECT_ROOT = Path(__file__).resolve().parent.parent.parent
 
 class AppSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="allow")
@@ -11,7 +16,15 @@ class AppSettings(BaseSettings):
     safe_mode: bool = Field(default=True, validation_alias="SAFE_MODE")
     max_workers: int = Field(default=4, validation_alias="MAX_WORKERS")
     default_dpi: int = Field(default=300, validation_alias="DEFAULT_DPI")
-    output_dir: str = Field(default="qa_output", validation_alias="OUTPUT_DIR")
+
+    # Path Configuration (Dynamic, Cross-Platform & Root-Relative)
+    project_root: Path = Field(default=_DEFAULT_PROJECT_ROOT)
+    data_dir: Path = Field(default=_DEFAULT_PROJECT_ROOT / "Data", validation_alias="DATA_DIR")
+    output_dir: Path = Field(default=_DEFAULT_PROJECT_ROOT / "qa_output", validation_alias="OUTPUT_DIR")
+    catalogue_path: Path = Field(
+        default=_DEFAULT_PROJECT_ROOT / "Data" / "warnings_list 2 1 (1).xlsx",
+        validation_alias="CATALOGUE_PATH"
+    )
     
     # Versioning
     engine_version: str = "1.0.0"

@@ -4,8 +4,9 @@ from typing import Dict, List, Optional
 from src.domain.warning import WarningDefinition
 from src.domain.enums import Severity, GeometryType
 from src.config.logging import logger
+from src.config.settings import settings
 
-MASTER_CATALOGUE_PATH = r"d:\Safedig_AG\Data\warnings_list 2 1 (1).xlsx"
+MASTER_CATALOGUE_PATH = str(settings.catalogue_path)
 
 # Provider normalization mapping
 PROVIDER_ALIASES = {

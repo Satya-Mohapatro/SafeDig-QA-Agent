@@ -3,13 +3,14 @@ import time
 from src.batch.queue import JobQueue
 from src.batch.worker import BatchWorkerPool
 from src.batch.models import JobTaskStatus
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
 def test_batch_worker_pool_execution():
     custom_queue = JobQueue()
     worker = BatchWorkerPool(max_workers=2, queue=custom_queue)
     
     # Enqueue a real folder
-    task = custom_queue.enqueue("d:/Safedig_AG/Data/244414_201678", priority=1, job_id="JOB-WORKER-TEST")
+    task = custom_queue.enqueue(str(SAMPLE_FOLDER_244414), priority=1, job_id="JOB-WORKER-TEST")
     
     worker.start()
     

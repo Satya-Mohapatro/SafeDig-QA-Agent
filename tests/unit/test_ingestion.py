@@ -2,8 +2,9 @@ import os
 import pytest
 from src.ingestion import scan_root_folder, compute_sha256, classify_file, build_manifest
 from src.domain.enums import FileClassification
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_DIR = r"d:\Safedig_AG\Data\244414_201678"
+SAMPLE_DIR = str(SAMPLE_FOLDER_244414)
 
 def test_file_classification():
     assert classify_file("index.xlsx") == FileClassification.INDEX

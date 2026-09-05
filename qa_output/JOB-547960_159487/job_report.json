@@ -9,7 +9,10 @@
     "human_review_count": 3,
     "human_review_pct": 4.3,
     "blocked_count": 2,
-    "blocked_pct": 2.9
+    "blocked_pct": 2.9,
+    "auto_clear": 64,
+    "human_review": 3,
+    "blocked": 2
   },
   "results": [
     {
@@ -612,5 +615,6 @@
       "decision": "AUTO_CLEAR",
       "reason": "Utility reported no assets in the enquiry area (Status='No')."
     }
-  ]
+  ],
+  "overall_decision": "HUMAN_REVIEW"
 }

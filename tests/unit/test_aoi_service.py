@@ -2,8 +2,9 @@ import os
 import pytest
 from src.aoi import get_document_aoi
 from src.domain.enums import GeometryType
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_PDF = r"d:\Safedig_AG\Data\244414_201678\42332089_NGED - Wales.pdf"
+SAMPLE_PDF = str(SAMPLE_NGED_PDF)
 
 def test_detect_aoi():
     assert os.path.exists(SAMPLE_PDF)

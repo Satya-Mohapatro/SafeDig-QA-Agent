@@ -1,0 +1,79 @@
+# ==============================================================================
+# SafeDig AI - Production Git Ignore Configuration
+# ==============================================================================
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyd
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# Environment Variables & Sensitive Secrets (Track .env.example, ignore real .env)
+.env
+*.local.env
+.env.*.local
+!.env.example
+
+# Local SQLite Database & WAL / Journal files
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite3
+safedig.db
+
+# QA Output Artifacts, Crops & Test Runs
+qa_output/
+*.log
+scratch/
+tmp/
+
+# Testing & Coverage Caches
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+
+# Large Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# IDE & Editor Configuration
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+*.sublime-project
+*.sublime-workspace
+
+# Operating System Files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Python Packaging & Distribution
+build/
+dist/
+*.egg-info/
+.eggs/

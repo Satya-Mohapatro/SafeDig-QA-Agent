@@ -2,7 +2,7 @@
   "job_id": "JOB-WORKER-TEST",
   "root_dir": "d:/Safedig_AG/Data/244414_201678",
   "overall_decision": "HUMAN_REVIEW",
-  "generated_at": "2026-09-03T14:44:42.964092",
+  "generated_at": "2026-09-04T13:25:06.606349",
   "summary": {
     "total_documents": 69,
     "auto_clear_count": 68,

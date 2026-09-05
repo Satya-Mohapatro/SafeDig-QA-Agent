@@ -4,8 +4,9 @@ from src.ingestion import scan_root_folder
 from src.index import parse_index_excel, validate_index_records, account_for_all_rows
 from src.documents import resolve_documents
 from src.domain.enums import DocumentResolutionStatus
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_DIR = r"d:\Safedig_AG\Data\244414_201678"
+SAMPLE_DIR = str(SAMPLE_FOLDER_244414)
 INDEX_PATH = os.path.join(SAMPLE_DIR, "index.xlsx")
 
 def test_parse_real_index_excel():

@@ -2,6 +2,7 @@ import pytest
 import httpx
 from src.api.app import app
 from src.batch import worker_pool
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
 @pytest.mark.anyio
 async def test_batch_api_endpoints_and_progress():
@@ -9,7 +10,7 @@ async def test_batch_api_endpoints_and_progress():
         async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test") as client:
             # 1. Scan directory
             scan_resp = await client.post("/api/v1/batch/scan-directory", json={
-                "parent_directory": "d:/Safedig_AG/Data",
+                "parent_directory": str(DATA_DIR),
                 "priority": 5
             })
             assert scan_resp.status_code == 200

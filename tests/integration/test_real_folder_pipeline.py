@@ -2,8 +2,9 @@ import os
 import pytest
 from src.pipeline import run_map_qa_pipeline
 from src.domain.enums import Decision
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_FOLDER = r"d:\Safedig_AG\Data\244414_201678"
+SAMPLE_FOLDER = str(SAMPLE_FOLDER_244414)
 
 def test_full_pipeline_on_real_sample_folder():
     assert os.path.exists(SAMPLE_FOLDER)

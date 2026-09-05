@@ -4,8 +4,9 @@ from src.qa.workspace import workspace_builder
 from src.domain.index_record import IndexRecord
 from src.domain.document import DiscoveredFile
 from src.domain.enums import FileClassification
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_FOLDER = "d:/Safedig_AG/Data/244414_201678"
+SAMPLE_FOLDER = str(SAMPLE_FOLDER_244414)
 SAMPLE_PDF = os.path.join(SAMPLE_FOLDER, "42332089_WWU.pdf")
 
 def test_workspace_payload_builder():

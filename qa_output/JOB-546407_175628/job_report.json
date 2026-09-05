@@ -1,13 +1,14 @@
 {
   "job_id": "JOB-546407_175628",
-  "root_dir": "d:\\Safedig_AG\\Data\\546407_175628",
-  "generated_at": "2026-09-01T15:26:58.678778",
+  "root_dir": "d:/Safedig_AG/Data/546407_175628",
+  "overall_decision": "BLOCKED",
+  "generated_at": "2026-09-04T15:01:06.421038",
   "summary": {
     "total_documents": 69,
-    "auto_clear_count": 65,
-    "auto_clear_pct": 94.2,
-    "human_review_count": 1,
-    "human_review_pct": 1.4,
+    "auto_clear_count": 61,
+    "auto_clear_pct": 88.4,
+    "human_review_count": 5,
+    "human_review_pct": 7.2,
     "blocked_count": 3,
     "blocked_pct": 4.3
   },
@@ -143,12 +144,12 @@
       "utility_name": "UK Power Networks",
       "utility_type": "Electricity",
       "upstream_claim": "There is HV Cable in this area|",
-      "independent_findings_count": 3,
-      "reconciliation_outcome": "MATCH",
-      "decision": "AUTO_CLEAR",
-      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+      "independent_findings_count": 0,
+      "reconciliation_outcome": "POSSIBLE_FALSE_POSITIVE",
+      "decision": "HUMAN_REVIEW",
+      "reason": "HUMAN REVIEW: Upstream claimed warning 'There is HV Cable in this area|', but independent analysis found no intersecting assets.",
       "evidence_package_id": "PKG-DOC-FIL-0021",
-      "evidence_count": 8
+      "evidence_count": 2
     },
     {
       "index_record_id": "IDX-JOB-546407_175628-016",
@@ -317,12 +318,12 @@
       "utility_name": "Clean_Water",
       "utility_type": "Water",
       "upstream_claim": null,
-      "independent_findings_count": 0,
-      "reconciliation_outcome": "CONFIRMED_CLEAN",
-      "decision": "AUTO_CLEAR",
-      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+      "independent_findings_count": 19,
+      "reconciliation_outcome": "MISSED_WARNING",
+      "decision": "HUMAN_REVIEW",
+      "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected Clean Potable Water Distribution Main",
       "evidence_package_id": "PKG-DOC-FIL-0006",
-      "evidence_count": 2
+      "evidence_count": 40
     },
     {
       "index_record_id": "IDX-JOB-546407_175628-037",
@@ -331,12 +332,12 @@
       "utility_name": "Waste_Water",
       "utility_type": "Water",
       "upstream_claim": null,
-      "independent_findings_count": 0,
-      "reconciliation_outcome": "CONFIRMED_CLEAN",
-      "decision": "AUTO_CLEAR",
-      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+      "independent_findings_count": 19,
+      "reconciliation_outcome": "MISSED_WARNING",
+      "decision": "HUMAN_REVIEW",
+      "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected Clean Potable Water Distribution Main",
       "evidence_package_id": "PKG-DOC-FIL-0024",
-      "evidence_count": 2
+      "evidence_count": 40
     },
     {
       "index_record_id": "IDX-JOB-546407_175628-038",
@@ -431,12 +432,12 @@
       "utility_name": "VM",
       "utility_type": "Telecom",
       "upstream_claim": null,
-      "independent_findings_count": 0,
-      "reconciliation_outcome": "CONFIRMED_CLEAN",
-      "decision": "AUTO_CLEAR",
-      "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+      "independent_findings_count": 1,
+      "reconciliation_outcome": "MISSED_WARNING",
+      "decision": "HUMAN_REVIEW",
+      "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected Telecommunications Duct and Fibre Network",
       "evidence_package_id": "PKG-DOC-FIL-0022",
-      "evidence_count": 2
+      "evidence_count": 4
     },
     {
       "index_record_id": "IDX-JOB-546407_175628-049",

@@ -1,16 +1,23 @@
+import os
 from typing import List
 from src.eval.models import GroundTruthCase
 from src.domain.enums import Decision, ReconciliationOutcome
+from src.config.settings import settings
 
 class GroundTruthDataset:
     @staticmethod
     def get_gold_standard_cases() -> List[GroundTruthCase]:
+        data_dir = str(settings.data_dir)
+        folder_244414 = os.path.join(data_dir, "244414_201678").replace("\\", "/")
+        folder_534668 = os.path.join(data_dir, "534668_175407").replace("\\", "/")
+        folder_550782 = os.path.join(data_dir, "550782_169179").replace("\\", "/")
+
         return [
             # 1. Wales & West Utilities - Missed High Pressure Gas Line (Safety Critical)
             GroundTruthCase(
                 case_id="GT-244414-WWU",
                 job_id="JOB-244414_201678",
-                root_dir="d:/Safedig_AG/Data/244414_201678",
+                root_dir=folder_244414,
                 filename="42332089_WWU.pdf",
                 utility_name="Wales and West Utilities",
                 expected_decision=Decision.AUTO_CLEAR,
@@ -24,7 +31,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-244414-GTC",
                 job_id="JOB-244414_201678",
-                root_dir="d:/Safedig_AG/Data/244414_201678",
+                root_dir=folder_244414,
                 filename="GTC.pdf",
                 utility_name="GTC-Gas",
                 expected_decision=Decision.HUMAN_REVIEW,
@@ -37,7 +44,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-244414-NGED",
                 job_id="JOB-244414_201678",
-                root_dir="d:/Safedig_AG/Data/244414_201678",
+                root_dir=folder_244414,
                 filename="42332089_NGED - Wales.pdf",
                 utility_name="National Grid Electricity Distribution",
                 expected_decision=Decision.AUTO_CLEAR,
@@ -50,7 +57,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-244414-BT",
                 job_id="JOB-244414_201678",
-                root_dir="d:/Safedig_AG/Data/244414_201678",
+                root_dir=folder_244414,
                 filename="BT.pdf",
                 utility_name="BT",
                 expected_decision=Decision.AUTO_CLEAR,
@@ -63,7 +70,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-244414-VM",
                 job_id="JOB-244414_201678",
-                root_dir="d:/Safedig_AG/Data/244414_201678",
+                root_dir=folder_244414,
                 filename="VM.pdf",
                 utility_name="VM",
                 expected_decision=Decision.AUTO_CLEAR,
@@ -76,7 +83,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-244414-WATER",
                 job_id="JOB-244414_201678",
-                root_dir="d:/Safedig_AG/Data/244414_201678",
+                root_dir=folder_244414,
                 filename="W.pdf",
                 utility_name="Welsh Water",
                 expected_decision=Decision.AUTO_CLEAR,
@@ -89,7 +96,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-534668-VM",
                 job_id="JOB-534668_175407",
-                root_dir="d:/Safedig_AG/Data/534668_175407",
+                root_dir=folder_534668,
                 utility_name="VM",
                 expected_decision=Decision.AUTO_CLEAR,
                 expected_outcome=ReconciliationOutcome.CONFIRMED_CLEAN,
@@ -100,7 +107,7 @@ class GroundTruthDataset:
             GroundTruthCase(
                 case_id="GT-550782-CLEAN-WATER",
                 job_id="JOB-550782_169179",
-                root_dir="d:/Safedig_AG/Data/550782_169179",
+                root_dir=folder_550782,
                 utility_name="Clean_Water",
                 expected_decision=Decision.HUMAN_REVIEW,
                 expected_outcome=ReconciliationOutcome.POSSIBLE_FALSE_POSITIVE,

@@ -1,5 +1,6 @@
 import pytest
 from src.orchestration import map_qa_workflow, MapQAState
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
 def test_langgraph_compilation():
     assert map_qa_workflow is not None
@@ -11,7 +12,7 @@ def test_langgraph_compilation():
 
 def test_langgraph_missing_folder_state():
     initial_state: MapQAState = {
-        "root_dir": "d:/Safedig_AG/NonExistentFolder_999",
+        "root_dir": str(PROJECT_ROOT / "NonExistentFolder_999"),
         "job_id": "TEST-JOB-ERR"
     }
     # Should handle gracefully without unhandled crash

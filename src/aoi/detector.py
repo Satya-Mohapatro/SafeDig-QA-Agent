@@ -1,94 +1,171 @@
-import fitz
+import pymupdf
 from typing import List, Optional, Tuple
 from shapely.geometry import Polygon, box
 from src.domain.aoi import AOI
 from src.domain.enums import AOIDetectionMethod, GeometryType
 from src.config.logging import logger
 
+
+def _visual_to_unrotated(rect: pymupdf.Rect, rotation: int, mediabox: pymupdf.Rect) -> pymupdf.Rect:
+    """Convert visual (rendered) page coordinates to unrotated (mediabox) coordinates.
+
+    PyMuPDF's get_drawings() always returns coordinates in the UNROTATED mediabox space.
+    However, size filters (pw, ph) compare against the VISUAL page.rect dimensions.
+    
+    This helper converts a rect from the visual/rendered space back to unrotated space,
+    so that visual-based filters remain consistent with drawing coordinates.
+    """
+    mw, mh = mediabox.width, mediabox.height
+    if rotation == 0:
+        return pymupdf.Rect(rect)
+    elif rotation == 90:
+        # visual → unrotated: x_un = y_vis, y_un = mh - x_vis (for rect: swap & mirror)
+        return pymupdf.Rect(rect.y0, mh - rect.x1, rect.y1, mh - rect.x0)
+    elif rotation == 180:
+        return pymupdf.Rect(mw - rect.x1, mh - rect.y1, mw - rect.x0, mh - rect.y0)
+    elif rotation == 270:
+        return pymupdf.Rect(mw - rect.y1, rect.x0, mw - rect.y0, rect.x1)
+    return pymupdf.Rect(rect)
+
+
+def _unrotated_to_visual(rect: pymupdf.Rect, rotation: int, mediabox: pymupdf.Rect) -> pymupdf.Rect:
+    """Convert unrotated (mediabox) drawing coordinates to visual/rendered page coordinates.
+
+    PyMuPDF's get_drawings() returns coords in unrotated space.
+    This maps them into the visual page space so size & position filters
+    (using page.rect width/height) work correctly.
+    """
+    mw, mh = mediabox.width, mediabox.height
+    if rotation == 0:
+        return pymupdf.Rect(rect)
+    elif rotation == 90:
+        # unrotated (x,y) → visual: x_vis = mh - y_un, y_vis = x_un
+        r = pymupdf.Rect(mh - rect.y1, rect.x0, mh - rect.y0, rect.x1)
+        r.normalize()
+        return r
+    elif rotation == 180:
+        r = pymupdf.Rect(mw - rect.x1, mh - rect.y1, mw - rect.x0, mh - rect.y0)
+        r.normalize()
+        return r
+    elif rotation == 270:
+        r = pymupdf.Rect(rect.y0, mw - rect.x1, rect.y1, mw - rect.x0)
+        r.normalize()
+        return r
+    return pymupdf.Rect(rect)
+
+
 def detect_aoi_from_pdf(pdf_path: str, document_id: str, page_num: int = 1) -> AOI:
     """Detect the true enquiry Area of Interest (AOI) boundary from a PDF map.
-    
-    UK Utility Maps (LSBUD, WWU, SGN, UKPN, ESP, Cadent, etc.) represent the enquiry
-    site boundary as a Magenta/Purple dashed circle/polygon or a distinct Red search boundary.
-    This detector prioritizes:
-    1. Magenta / Purple dashed circular / polygonal enquiry boundaries.
-    2. Red dashed search boundaries in the map canvas.
-    3. Distinct vector boundary rectangles (excluding header/footer logos).
-    4. Central map canvas focus fallback.
+
+    Detection Priority:
+    1. ANY DASHED LINE that forms the dig-site boundary — colour-agnostic approach,
+       scored by: is dashed, has many vertices (circular), is in the map canvas area,
+       and is not a tiny legend swatch or a full-page border.
+       Common colours: magenta/purple (UKPN, SGN), yellow (NGED/WPD), red (some providers).
+    2. If no dashed boundary found → use the WHOLE map canvas as AOI
+       (excluding header, footer, and legend panels — based on content density).
+       This ensures no assets are ever missed when an explicit boundary is absent.
     """
     try:
-        doc = fitz.open(pdf_path)
+        doc = pymupdf.open(pdf_path)
         if page_num < 1 or page_num > len(doc):
             raise IndexError("Page number out of bounds")
-            
+
         page = doc[page_num - 1]
+        rotation = page.rotation
+        mediabox = page.mediabox
+        # Visual (rendered) page dimensions:
         pw, ph = page.rect.width, page.rect.height
+
         drawings = page.get_drawings()
-        
-        magenta_candidates = []
-        red_dashed_candidates = []
-        other_vector_candidates = []
-        
+
+        dashed_boundary_candidates = []
+
         for d in drawings:
-            raw_c = d.get("color") or d.get("fill")
-            rect_box = d.get("rect")
-            if not rect_box or not raw_c or len(raw_c) < 3:
+            raw_rect = d.get("rect")
+            if not raw_rect:
                 continue
-                
-            r, g, b = raw_c[:3]
-            if max(r, g, b) <= 1.0:
-                r, g, b = r * 255.0, g * 255.0, b * 255.0
-                
-            w, h = rect_box.width, rect_box.height
-            x0, y0, x1, y1 = rect_box.x0, rect_box.y0, rect_box.x1, rect_box.y1
+
             dashes = d.get("dashes")
-            has_dashes = bool(dashes and dashes != "[] 0")
+            has_dashes = bool(dashes and str(dashes).strip() not in ("", "[] 0", "[]"))
+            if not has_dashes:
+                continue
+
             num_items = len(d.get("items", []))
-            
-            # Filter out tiny symbols (< 25pt) and whole-page frames (> 92% width/height)
-            if w < 25 or h < 25 or w > pw * 0.92 or h > ph * 0.92:
-                continue
-                
-            # Filter out extreme footer / legend / header margin areas
-            if y0 > ph * 0.90 or y1 < ph * 0.04:
-                continue
-                
-            # 1. Check for Magenta / Violet / Purple Enquiry Boundary (e.g. RGB 205, 0, 205)
-            if r > 150 and g < 110 and b > 150:
-                score = (100 if has_dashes else 80) + (20 if num_items >= 10 else 0)
-                magenta_candidates.append((score, rect_box, "MAGENTA_DASHED" if has_dashes else "MAGENTA_VECTOR"))
-                continue
-                
-            # 2. Check for Red Dashed Boundary
-            if r > 170 and g < 90 and b < 90:
-                if has_dashes or num_items >= 4:
-                    if y0 < ph * 0.85:
-                        red_dashed_candidates.append((50, rect_box, "RED_DASHED"))
-                elif 40 < w < pw * 0.70 and 40 < h < ph * 0.70 and y0 > ph * 0.08 and y1 < ph * 0.85:
-                    other_vector_candidates.append((20, rect_box, "RED_RECT"))
+            width_pt = d.get("width") or 0.0
 
-        chosen_rect = None
+            # Map the unrotated drawing rect → visual page coords for size/position filtering
+            vis_rect = _unrotated_to_visual(raw_rect, rotation, mediabox)
+            vw, vh = vis_rect.width, vis_rect.height
+            vx0, vy0, vx1, vy1 = vis_rect.x0, vis_rect.y0, vis_rect.x1, vis_rect.y1
+
+            # --- Size filters ---
+            # Skip tiny legend swatches (< 30pt in either dimension)
+            if vw < 30 or vh < 30:
+                continue
+            # Skip full-page borders (> 95% of visual dimensions)
+            if vw > pw * 0.95 or vh > ph * 0.95:
+                continue
+
+            # --- Position filters ---
+            # Skip drawings entirely inside header (top 5%) or footer/legend (bottom 20%)
+            # The map canvas occupies roughly the top 5% to bottom 78% on A4 portrait,
+            # or left 5% to right 75% on A4 landscape.
+            if vy1 < ph * 0.04 or vy0 > ph * 0.82:
+                continue
+            if vx1 < pw * 0.01 or vx0 > pw * 0.85:
+                continue
+
+            # --- Scoring ---
+            # Higher scores for more circular (more items), clearly dashed, and larger
+            score = 0
+            score += 100  # base: it is dashed
+            score += min(num_items * 2, 80)   # more vertices → more circular
+            score += min(int(vw + vh), 200)    # larger bounding box preferred
+            if width_pt >= 1.5:
+                score += 20   # thicker boundary lines preferred
+            if num_items >= 16:
+                score += 30   # very likely a circle/polygon boundary
+
+            # Colour bonus (known providers)
+            raw_c = d.get("color") or d.get("fill")
+            if raw_c and len(raw_c) >= 3:
+                rc, gc, bc = [v * 255 for v in raw_c[:3]]
+                # Magenta/Purple (UKPN, SGN, Cadent, National Gas)
+                if rc > 140 and gc < 100 and bc > 140:
+                    score += 50
+                # Yellow/Gold (NGED/WPD)
+                elif rc > 180 and gc > 180 and bc < 80:
+                    score += 40
+                # Red (some water/other providers)
+                elif rc > 180 and gc < 80 and bc < 80:
+                    score += 30
+
+            dashed_boundary_candidates.append((score, raw_rect, vis_rect))
+
+        chosen_raw_rect = None
+        chosen_vis_rect = None
+        confidence = 0.99
         detect_method = AOIDetectionMethod.NATIVE_VECTOR
-        confidence = 0.98
 
-        if magenta_candidates:
-            magenta_candidates.sort(key=lambda x: x[0], reverse=True)
-            chosen_rect = magenta_candidates[0][1]
-            confidence = 0.99
-            logger.info(f"Detected Magenta Dashed AOI on page {page_num}: bbox={[chosen_rect.x0, chosen_rect.y0, chosen_rect.x1, chosen_rect.y1]}")
-        elif red_dashed_candidates:
-            red_dashed_candidates.sort(key=lambda x: x[0], reverse=True)
-            chosen_rect = red_dashed_candidates[0][1]
-            confidence = 0.95
-            logger.info(f"Detected Red Dashed AOI on page {page_num}: bbox={[chosen_rect.x0, chosen_rect.y0, chosen_rect.x1, chosen_rect.y1]}")
-        elif other_vector_candidates:
-            other_vector_candidates.sort(key=lambda x: x[0], reverse=True)
-            chosen_rect = other_vector_candidates[0][1]
-            confidence = 0.90
-            logger.info(f"Detected Vector AOI boundary on page {page_num}: bbox={[chosen_rect.x0, chosen_rect.y0, chosen_rect.x1, chosen_rect.y1]}")
+        if dashed_boundary_candidates:
+            dashed_boundary_candidates.sort(key=lambda x: x[0], reverse=True)
+            best = dashed_boundary_candidates[0]
+            chosen_raw_rect = best[1]
+            chosen_vis_rect = best[2]
+            logger.info(
+                f"Detected dashed boundary AOI on page {page_num} "
+                f"(score={best[0]}, rot={rotation}): "
+                f"unrotated_bbox=[{chosen_raw_rect.x0:.1f},{chosen_raw_rect.y0:.1f},"
+                f"{chosen_raw_rect.x1:.1f},{chosen_raw_rect.y1:.1f}] "
+                f"visual_bbox=[{chosen_vis_rect.x0:.1f},{chosen_vis_rect.y0:.1f},"
+                f"{chosen_vis_rect.x1:.1f},{chosen_vis_rect.y1:.1f}]"
+            )
 
-        if chosen_rect:
-            poly = box(chosen_rect.x0, chosen_rect.y0, chosen_rect.x1, chosen_rect.y1)
+        if chosen_raw_rect:
+            # Use UNROTATED coordinates for bbox (same space as get_drawings() paths)
+            poly = box(chosen_raw_rect.x0, chosen_raw_rect.y0,
+                       chosen_raw_rect.x1, chosen_raw_rect.y1)
             return AOI(
                 aoi_id=f"AOI-{document_id}-P{page_num}",
                 document_id=document_id,
@@ -96,30 +173,55 @@ def detect_aoi_from_pdf(pdf_path: str, document_id: str, page_num: int = 1) -> A
                 geometry_type=GeometryType.POLYGON,
                 method=detect_method,
                 coordinates=list(poly.exterior.coords),
-                bbox=[chosen_rect.x0, chosen_rect.y0, chosen_rect.x1, chosen_rect.y1],
+                bbox=[chosen_raw_rect.x0, chosen_raw_rect.y0,
+                      chosen_raw_rect.x1, chosen_raw_rect.y1],
                 confidence=confidence,
                 is_valid=True
             )
 
-        # 3. Central search zone fallback if explicit vector boundary line is absent
-        cx, cy = pw / 2.0, ph / 2.0
-        w_half, h_half = min(pw * 0.25, 160.0), min(ph * 0.25, 160.0)
-        center_box = box(cx - w_half, cy - h_half, cx + w_half, cy + h_half)
-        
-        logger.info(f"Defaulting to central map focus AOI on page {page_num}")
+        # ── FALLBACK: No dashed boundary found ───────────────────────────────
+        # Per user requirement: use the WHOLE MAP CANVAS as AOI.
+        # We estimate the map canvas by excluding the header (top ~5%),
+        # footer/legend panel (bottom ~22%), and any right-side legend block (right ~28%).
+        # All in unrotated (mediabox) coordinates so intersection with drawings works correctly.
+        mw, mh = mediabox.width, mediabox.height
+
+        # Determine map canvas bounds in unrotated space depending on page orientation
+        # Portrait (mh > mw): header top 5%, footer bottom 20%, right panel right 5%
+        # Landscape (mw > mh): header left 5%, legend panel right 22%, bottom footer 20%
+        if mh >= mw:
+            # Portrait orientation (unrotated)
+            canvas_x0 = mw * 0.02
+            canvas_y0 = mh * 0.05
+            canvas_x1 = mw * 0.95
+            canvas_y1 = mh * 0.80
+        else:
+            # Landscape orientation (unrotated)
+            canvas_x0 = mw * 0.01
+            canvas_y0 = mh * 0.02
+            canvas_x1 = mw * 0.78
+            canvas_y1 = mh * 0.95
+
+        canvas_box = box(canvas_x0, canvas_y0, canvas_x1, canvas_y1)
+
+        logger.info(
+            f"No dashed boundary found — using WHOLE MAP CANVAS as AOI on page {page_num}: "
+            f"bbox=[{canvas_x0:.1f},{canvas_y0:.1f},{canvas_x1:.1f},{canvas_y1:.1f}]"
+        )
         return AOI(
             aoi_id=f"AOI-{document_id}-P{page_num}",
             document_id=document_id,
             page_num=page_num,
             geometry_type=GeometryType.POLYGON,
             method=AOIDetectionMethod.FALLBACK,
-            coordinates=list(center_box.exterior.coords),
-            bbox=[cx - w_half, cy - h_half, cx + w_half, cy + h_half],
-            confidence=0.80,
+            coordinates=list(canvas_box.exterior.coords),
+            bbox=[canvas_x0, canvas_y0, canvas_x1, canvas_y1],
+            confidence=0.75,
             is_valid=True
         )
+
     except Exception as e:
-        logger.error(f"Error detecting AOI for {pdf_path}: {e}")
+        logger.error(f"Error detecting AOI for {pdf_path}: {e}", exc_info=True)
         return AOI(
             aoi_id=f"AOI-{document_id}-ERR",
             document_id=document_id,

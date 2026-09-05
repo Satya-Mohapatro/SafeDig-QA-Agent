@@ -1,8 +1,9 @@
 import pytest
 import os
 from src.orchestration import map_qa_workflow, MapQAState
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_FOLDER = "d:/Safedig_AG/Data/244414_201678"
+SAMPLE_FOLDER = str(SAMPLE_FOLDER_244414)
 
 def test_langgraph_real_folder_execution():
     assert os.path.exists(SAMPLE_FOLDER)

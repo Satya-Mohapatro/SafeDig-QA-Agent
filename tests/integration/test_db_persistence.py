@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from src.db.models import Base
 from src.db.persistence import PersistenceService
 from src.db.repositories import job_repo, document_repo, audit_repo
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
 @pytest.fixture
 async def async_db():
@@ -25,7 +26,7 @@ async def async_db():
 async def test_full_pipeline_persistence_and_queries(async_db):
     service = PersistenceService()
     job_id = "JOB-INTEGRATION-01"
-    root_dir = "d:/Safedig_AG/Data/Sample1"
+    root_dir = str(DATA_DIR / "Sample1")
 
     doc_results = [
         {

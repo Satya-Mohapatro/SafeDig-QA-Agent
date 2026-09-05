@@ -107,19 +107,38 @@ class LegendRegistry:
             legend_id="LGD-NGED",
             provider="National Grid Electricity Distribution",
             utility_type="Electricity",
-            version="1.0.0",
+            version="1.1.0",
             features=[
                 LegendFeature(
-                    feature_id="NGED_11KV_LINE",
+                    feature_id="NGED_11KV_RED",
                     warning_code="NGED_11KV",
                     description="11kV High Voltage Electricity Line",
                     geometry_type=GeometryType.LINE,
                     color=ColorSignature(rgb=(255, 0, 0), tolerance=40),
-                    stroke=StrokeStyle(min_width_pt=1.0, max_width_pt=5.0),
+                    stroke=StrokeStyle(min_width_pt=0.4, max_width_pt=5.0),
                     text_labels=["11KV", "11000V", "HV"]
+                ),
+                LegendFeature(
+                    feature_id="NGED_11KV_BLUE",
+                    warning_code="NGED_11KV",
+                    description="11kV High Voltage Overhead / Underground Asset",
+                    geometry_type=GeometryType.LINE,
+                    color=ColorSignature(rgb=(30, 144, 255), tolerance=55),  # Dodger Blue
+                    stroke=StrokeStyle(min_width_pt=0.4, max_width_pt=5.0),
+                    text_labels=["11KV", "11000V", "HV", "OHL", "OVERHEAD"]
+                ),
+                LegendFeature(
+                    feature_id="NGED_HV_GENERAL",
+                    warning_code="NGED_HV",
+                    description="High Voltage Electrical Cable / Line",
+                    geometry_type=GeometryType.LINE,
+                    color=ColorSignature(rgb=(0, 200, 255), tolerance=55),  # Cyan
+                    stroke=StrokeStyle(min_width_pt=0.4, max_width_pt=5.0),
+                    text_labels=["HV", "HIGH VOLTAGE", "33KV", "11KV"]
                 )
             ]
         )
+
         
         # 5. Wales & West Utilities (WWU)
         self.profiles["WWU"] = LegendProfile(

@@ -12,6 +12,195 @@ let allMapsForJob = [];           // full raw results for current job
 let mapsFilterDecision = 'ALL';   // current decision filter
 let workspacePreviousTab = 'maps'; // where to go back to from workspace
 
+// ─── Interactive Map Zoom & Pan State ───────────────────────────────────────
+
+let mapZoom = 1.0;
+let mapPanX = 0;
+let mapPanY = 0;
+let isMapDragging = false;
+let dragStartX = 0;
+let dragStartY = 0;
+let currentFullMapUrl = '';
+let currentCropUrl = '';
+let currentImageViewMode = 'map';
+
+function updateMapTransform() {
+  const stage = document.getElementById('ws-image-stage');
+  const badge = document.getElementById('zoom-level-badge');
+  if (stage) {
+    stage.style.transform = `translate(${mapPanX}px, ${mapPanY}px) scale(${mapZoom})`;
+  }
+  if (badge) {
+    badge.innerText = `${Math.round(mapZoom * 100)}%`;
+  }
+}
+
+function zoomMap(delta) {
+  const newZoom = Math.max(0.5, Math.min(6.0, mapZoom + delta));
+  mapZoom = Math.round(newZoom * 100) / 100;
+  updateMapTransform();
+}
+
+function resetMapZoom() {
+  mapZoom = 1.0;
+  mapPanX = 0;
+  mapPanY = 0;
+  updateMapTransform();
+}
+
+function handleMapWheel(e) {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.2 : -0.2;
+  zoomMap(delta);
+}
+
+function startMapPan(e) {
+  if (e.button !== 0) return;
+  isMapDragging = true;
+  dragStartX = e.clientX - mapPanX;
+  dragStartY = e.clientY - mapPanY;
+  const vp = document.getElementById('ws-viewport-container');
+  if (vp) vp.classList.add('cursor-grabbing');
+}
+
+function doMapPan(e) {
+  if (!isMapDragging) return;
+  mapPanX = e.clientX - dragStartX;
+  mapPanY = e.clientY - dragStartY;
+  updateMapTransform();
+}
+
+function endMapPan() {
+  isMapDragging = false;
+  const vp = document.getElementById('ws-viewport-container');
+  if (vp) vp.classList.remove('cursor-grabbing');
+}
+
+function focusAOI() {
+  if (!currentWorkspacePayload || !currentWorkspacePayload.aoi_bbox) {
+    showToast('No AOI coordinates available for this plan.', 'info');
+    return;
+  }
+  if (currentImageViewMode !== 'map') {
+    setMapImageView('map');
+  }
+  const bbox = currentWorkspacePayload.aoi_bbox;
+  mapZoom = 2.5;
+  const vp = document.getElementById('ws-viewport-container');
+  if (vp) {
+    const aoiCenterX = ((bbox[0] + bbox[2]) / 2.0);
+    const aoiCenterY = ((bbox[1] + bbox[3]) / 2.0);
+    const vpW = vp.clientWidth || 600;
+    const vpH = vp.clientHeight || 500;
+    mapPanX = -Math.round((aoiCenterX * 1.5) - (vpW / 3.0));
+    mapPanY = -Math.round((aoiCenterY * 1.5) - (vpH / 3.0));
+  } else {
+    mapPanX = -50;
+    mapPanY = -50;
+  }
+  updateMapTransform();
+  showToast('Focused onto Enquiry Site Boundary (AOI)', 'info');
+}
+
+function setMapImageView(mode) {
+  currentImageViewMode = mode;
+  const btnMap = document.getElementById('btn-view-map');
+  const btnCrop = document.getElementById('btn-view-crop');
+  const imgEl = document.getElementById('ws-evidence-image');
+
+  if (mode === 'map') {
+    if (btnMap) btnMap.className = 'px-2 py-0.5 rounded text-blue-400 font-semibold bg-slate-800 transition';
+    if (btnCrop) btnCrop.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-slate-200 transition';
+    if (imgEl && currentFullMapUrl) imgEl.src = currentFullMapUrl;
+  } else {
+    if (btnCrop) btnCrop.className = 'px-2 py-0.5 rounded text-blue-400 font-semibold bg-slate-800 transition';
+    if (btnMap) btnMap.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-slate-200 transition';
+    if (imgEl && currentCropUrl) {
+      imgEl.src = currentCropUrl;
+    } else {
+      showToast('No detailed hazard crop available; displaying full sheet plan.', 'info');
+      if (imgEl && currentFullMapUrl) imgEl.src = currentFullMapUrl;
+    }
+  }
+  resetMapZoom();
+}
+
+// ─── Expanded Fullscreen Modal Controls ─────────────────────────────────────
+
+let modalZoom = 1.0;
+let modalPanX = 0;
+let modalPanY = 0;
+let isModalDragging = false;
+let modalStartX = 0;
+let modalStartY = 0;
+
+function toggleMapFullscreen() {
+  const modal = document.getElementById('map-fullscreen-modal');
+  const fsImg = document.getElementById('fs-evidence-image');
+  const wsImg = document.getElementById('ws-evidence-image');
+  const title = document.getElementById('fs-modal-title');
+  if (!modal) return;
+
+  if (modal.classList.contains('hidden')) {
+    if (wsImg && wsImg.src) fsImg.src = wsImg.src;
+    if (currentWorkspacePayload) {
+      title.innerText = `${currentWorkspacePayload.filename || 'Map Plan'} — 300 DPI Inspection`;
+    }
+    modal.classList.remove('hidden');
+    resetModalZoom();
+  } else {
+    modal.classList.add('hidden');
+  }
+  if (window.lucide) lucide.createIcons();
+}
+
+function updateModalTransform() {
+  const stage = document.getElementById('fs-image-stage');
+  const badge = document.getElementById('fs-zoom-level');
+  if (stage) stage.style.transform = `translate(${modalPanX}px, ${modalPanY}px) scale(${modalZoom})`;
+  if (badge) badge.innerText = `${Math.round(modalZoom * 100)}%`;
+}
+
+function zoomModalMap(delta) {
+  modalZoom = Math.max(0.5, Math.min(8.0, modalZoom + delta));
+  updateModalTransform();
+}
+
+function resetModalZoom() {
+  modalZoom = 1.0;
+  modalPanX = 0;
+  modalPanY = 0;
+  updateModalTransform();
+}
+
+function handleModalWheel(e) {
+  e.preventDefault();
+  const delta = e.deltaY < 0 ? 0.25 : -0.25;
+  zoomModalMap(delta);
+}
+
+function startModalPan(e) {
+  if (e.button !== 0) return;
+  isModalDragging = true;
+  modalStartX = e.clientX - modalPanX;
+  modalStartY = e.clientY - modalPanY;
+  const vp = document.getElementById('fs-viewport');
+  if (vp) vp.classList.add('cursor-grabbing');
+}
+
+function doModalPan(e) {
+  if (!isModalDragging) return;
+  modalPanX = e.clientX - modalStartX;
+  modalPanY = e.clientY - modalStartY;
+  updateModalTransform();
+}
+
+function endModalPan() {
+  isModalDragging = false;
+  const vp = document.getElementById('fs-viewport');
+  if (vp) vp.classList.remove('cursor-grabbing');
+}
+
 // ─── Tab Switching ──────────────────────────────────────────────────────────
 
 function switchTab(tabId) {
@@ -105,12 +294,21 @@ function onFolderInputChange() {
   lucide.createIcons();
 }
 
-// ─── Decision Badge Helper ──────────────────────────────────────────────────
+// ─── Modern Badge Helpers ───────────────────────────────────────────────────
 
 function decisionBadgeClass(dec) {
-  if (dec === 'AUTO_CLEAR') return 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
-  if (dec === 'HUMAN_REVIEW') return 'bg-amber-500/20 text-amber-300 border border-amber-500/30';
-  return 'bg-rose-500/20 text-rose-300 border border-rose-500/30';
+  if (dec === 'AUTO_CLEAR') return 'badge-auto-clear';
+  if (dec === 'HUMAN_REVIEW') return 'badge-human-review';
+  return 'badge-blocked';
+}
+
+function utilityBadge(util) {
+  const u = (util || '').toLowerCase();
+  if (u.includes('gas')) return '<span class="badge-utility badge-gas">Gas</span>';
+  if (u.includes('elec') || u.includes('power') || u.includes('ukpn') || u.includes('nged')) return '<span class="badge-utility badge-elec">Electricity</span>';
+  if (u.includes('water') || u.includes('sewer') || u.includes('thames') || u.includes('anglian')) return '<span class="badge-utility badge-water">Water</span>';
+  if (u.includes('telecom') || u.includes('bt') || u.includes('virgin') || u.includes('openreach')) return '<span class="badge-utility badge-telecom">Telecom</span>';
+  return `<span class="badge-utility badge-default">${util || '--'}</span>`;
 }
 
 function decisionIcon(dec) {
@@ -276,7 +474,7 @@ async function fetchAndRenderMaps(jobId) {
   if (jobBadge) jobBadge.innerText = jobId;
   const tbody = document.getElementById('maps-table-body');
   if (tbody) {
-    tbody.innerHTML = `<tr><td colspan="13" class="py-10 text-center text-slate-500 text-xs"><svg class="animate-spin h-5 w-5 mx-auto mb-2 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>Loading ${jobId} map results...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="py-10 text-center text-slate-500 text-xs"><svg class="animate-spin h-5 w-5 mx-auto mb-2 text-blue-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>Loading ${jobId} map results...</td></tr>`;
   }
 
   try {
@@ -334,21 +532,18 @@ async function viewJobMaps(jobId) {
 // Decision filter button click
 function filterMaps(decision) {
   mapsFilterDecision = decision;
-  // Update active button styling
   ['ALL', 'AUTO_CLEAR', 'HUMAN_REVIEW', 'BLOCKED'].forEach(d => {
     const btnId = d === 'ALL' ? 'filter-btn-all' : `filter-btn-${d}`;
     const btn = document.getElementById(btnId);
     if (!btn) return;
     if (d === decision) {
-      btn.classList.remove('bg-slate-700', 'text-emerald-400', 'text-amber-400', 'text-rose-400', 'text-slate-400');
-      btn.classList.add('bg-blue-600', 'text-white', 'border-blue-500');
+      btn.className = 'map-filter-btn px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs font-bold bg-blue-600 text-white border border-blue-500 shadow-sm';
     } else {
-      btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-500');
-      btn.classList.add('bg-slate-700', 'border-slate-600');
-      if (d === 'AUTO_CLEAR') btn.classList.add('text-emerald-400');
-      else if (d === 'HUMAN_REVIEW') btn.classList.add('text-amber-400');
-      else if (d === 'BLOCKED') btn.classList.add('text-rose-400');
-      else btn.classList.add('text-slate-400');
+      let textColor = 'text-slate-400 hover:text-slate-200';
+      if (d === 'AUTO_CLEAR') textColor = 'text-emerald-400 hover:bg-emerald-500/10';
+      else if (d === 'HUMAN_REVIEW') textColor = 'text-amber-400 hover:bg-amber-500/10';
+      else if (d === 'BLOCKED') textColor = 'text-rose-400 hover:bg-rose-500/10';
+      btn.className = `map-filter-btn px-2.5 sm:px-3 py-1 rounded-lg text-[10px] sm:text-xs font-bold bg-slate-700 ${textColor} border border-slate-600 transition`;
     }
   });
   applyMapFilters();
@@ -400,78 +595,81 @@ function renderMapsTable(maps) {
   if (!tbody) return;
 
   if (!maps || maps.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="13" class="py-10 text-center text-slate-500 text-xs">No maps match the current filter.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="12" class="py-12 text-center text-slate-500 text-xs sm:text-sm font-medium">No maps match the current filter criteria.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = maps.map(m => {
     const dec = m.decision || 'UNKNOWN';
     const outcome = m.reconciliation_outcome || '--';
-    const reason = (m.reason || m.reason_detail || m.policy_reason || '--').slice(0, 90);
-    const upstreamClaim = m.upstream_claim || m.upstream_warnings_count > 0 ? `⚠️ ${m.upstream_warnings_count || ''} Warning(s)` : '✓ Clean';
-    const indepResult = m.independent_findings_count > 0 ? `🔍 ${m.independent_findings_count} Detection(s)` : '✓ No hazards';
+    const reason = (m.reason || m.reason_detail || m.policy_reason || '--');
+    const reasonShort = reason.length > 70 ? reason.slice(0, 70) + '...' : reason;
+
+    // Upstream formatting
+    const upstreamClaim = (m.upstream_warnings_count && m.upstream_warnings_count > 0) || (m.upstream_claim && !m.upstream_claim.toLowerCase().includes('clean'))
+      ? `<span class="inline-flex items-center gap-1 font-semibold text-amber-400"><i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400"></i> ${m.upstream_warnings_count || 1} Warning(s)</span>`
+      : `<span class="inline-flex items-center gap-1 text-slate-400"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> Clean</span>`;
+
+    // Independent QA formatting
+    const indepResult = (m.independent_findings_count && m.independent_findings_count > 0)
+      ? `<span class="inline-flex items-center gap-1 font-semibold text-blue-400"><i data-lucide="crosshair" class="w-3.5 h-3.5 text-blue-400"></i> ${m.independent_findings_count} Hazard(s)</span>`
+      : `<span class="inline-flex items-center gap-1 text-slate-400"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i> No hazards</span>`;
+
     const warnCount = m.warning_count || m.upstream_warnings_count || 0;
     const evidCount = m.evidence_count || 0;
     const reviewStatus = m.human_disposition_action
-      ? `<span class="px-1.5 py-0.5 text-[9px] font-bold rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">${m.human_disposition_action}</span>`
-      : `<span class="text-slate-500 text-[10px]">Pending</span>`;
+      ? `<span class="px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded bg-blue-500/20 text-blue-300 border border-blue-500/30">${m.human_disposition_action}</span>`
+      : `<span class="text-slate-500 text-[10px] sm:text-xs">Pending</span>`;
 
     const docId = m.document_id || m.index_record_id || '';
     const indexRef = m.index_record_id || m.row_id || '--';
 
     return `
-      <tr class="hover:bg-slate-800/60 transition-colors ${dec === 'BLOCKED' ? 'border-l-2 border-rose-500' : dec === 'HUMAN_REVIEW' ? 'border-l-2 border-amber-500' : ''}">
-        <td class="py-2.5 px-3">
-          <div class="font-mono text-[11px] font-bold text-slate-200 max-w-[180px] truncate" title="${m.filename || ''}">${m.filename || '--'}</div>
-          <div class="text-[9px] text-slate-500 font-mono">${docId}</div>
+      <tr class="hover:bg-slate-800/60 transition-colors border-b border-slate-700/30 ${dec === 'BLOCKED' ? 'border-l-4 border-rose-500' : dec === 'HUMAN_REVIEW' ? 'border-l-4 border-amber-500' : ''}">
+        <td class="py-2.5 sm:py-3 px-3 sm:px-4">
+          <div class="font-mono text-xs sm:text-sm font-bold text-slate-100 truncate max-w-[220px] 2xl:max-w-[340px]" title="${m.filename || ''}">${m.filename || '--'}</div>
+          <div class="text-[10px] sm:text-xs text-slate-400 font-mono mt-0.5 truncate max-w-[220px] 2xl:max-w-[340px]" title="${indexRef} • ${docId}">${indexRef}${docId && docId !== indexRef ? ` • ${docId}` : ''}</div>
         </td>
-        <td class="py-2.5 px-3 font-mono text-[10px] text-slate-400">${indexRef}</td>
-        <td class="py-2.5 px-3">
-          <div class="font-semibold text-slate-200 text-[11px]">${m.utility_name || '--'}</div>
+        <td class="py-2.5 sm:py-3 px-3">
+          <div class="font-semibold text-slate-200 text-xs sm:text-sm whitespace-nowrap">${m.utility_name || '--'}</div>
         </td>
-        <td class="py-2.5 px-3">
-          <span class="px-1.5 py-0.5 text-[9px] font-bold rounded-full bg-slate-700/80 text-slate-300 border border-slate-600">${m.utility_type || '--'}</span>
+        <td class="py-2.5 sm:py-3 px-2.5 whitespace-nowrap">
+          ${utilityBadge(m.utility_type || m.utility_name)}
         </td>
-        <td class="py-2.5 px-3 text-center">
-          <span class="px-2 py-0.5 text-[9px] font-bold rounded-full ${
+        <td class="py-2.5 sm:py-3 px-2 text-center whitespace-nowrap">
+          <span class="px-2 py-0.5 text-[10px] sm:text-xs font-bold rounded-full ${
             m.status === 'Affects' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' :
             m.status === 'No' ? 'bg-slate-800 text-slate-400 border border-slate-700' :
             'bg-blue-500/10 text-blue-300 border border-blue-500/20'
           }">${m.status || '--'}</span>
         </td>
-        <td class="py-2.5 px-3">
-          <span class="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold rounded-full ${decisionBadgeClass(dec)} w-fit">
-            <i data-lucide="${decisionIcon(dec)}" class="w-3 h-3"></i>${dec}
+        <td class="py-2.5 sm:py-3 px-3 whitespace-nowrap">
+          <span class="badge-decision ${decisionBadgeClass(dec)}">
+            <i data-lucide="${decisionIcon(dec)}" class="w-3.5 h-3.5"></i>
+            <span>${dec}</span>
           </span>
         </td>
-        <td class="py-2.5 px-3 text-[11px]">
-          <span class="${warnCount > 0 ? 'text-amber-400' : 'text-emerald-400'}">${upstreamClaim}</span>
+        <td class="py-2.5 sm:py-3 px-3 text-xs sm:text-sm whitespace-nowrap">${upstreamClaim}</td>
+        <td class="py-2.5 sm:py-3 px-3 text-xs sm:text-sm whitespace-nowrap">${indepResult}</td>
+        <td class="py-2.5 sm:py-3 px-2 text-center font-bold ${warnCount > 0 ? 'text-amber-400' : 'text-slate-400'}">${warnCount}</td>
+        <td class="py-2.5 sm:py-3 px-2 text-center font-bold ${evidCount > 0 ? 'text-blue-400' : 'text-slate-500'}">${evidCount}</td>
+        <td class="py-2.5 sm:py-3 px-3">
+          <div class="text-[11px] sm:text-xs text-slate-400 max-w-[180px] 2xl:max-w-[320px] truncate" title="${reason}">${reasonShort}</div>
+          ${outcome !== '--' ? `<div class="text-[10px] text-slate-500 font-mono mt-0.5">${outcome}</div>` : ''}
         </td>
-        <td class="py-2.5 px-3 text-[11px]">
-          <span class="${m.independent_findings_count > 0 ? 'text-blue-400' : 'text-slate-400'}">${indepResult}</span>
-        </td>
-        <td class="py-2.5 px-3 text-center">
-          <span class="font-bold ${warnCount > 0 ? 'text-amber-400' : 'text-slate-400'}">${warnCount}</span>
-        </td>
-        <td class="py-2.5 px-3 text-center">
-          <span class="font-bold ${evidCount > 0 ? 'text-blue-400' : 'text-slate-500'}">${evidCount}</span>
-        </td>
-        <td class="py-2.5 px-3 max-w-[200px]">
-          <span class="text-[10px] text-slate-400 block truncate" title="${reason}">${reason}</span>
-          ${outcome !== '--' ? `<span class="text-[9px] text-slate-500">${outcome}</span>` : ''}
-        </td>
-        <td class="py-2.5 px-3">${reviewStatus}</td>
-        <td class="py-2.5 px-3 text-right">
+        <td class="py-2.5 sm:py-3 px-2.5 whitespace-nowrap">${reviewStatus}</td>
+        <td class="py-2.5 sm:py-3 px-3 text-right whitespace-nowrap">
           <button onclick="openWorkspace('${currentJobId}', '${docId}')"
-            class="px-2.5 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-[10px] font-bold transition-all flex items-center gap-1 float-right shadow-sm">
-            Inspect <i data-lucide="chevron-right" class="w-3 h-3"></i>
+            class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-bold transition-all inline-flex items-center gap-1 shadow-sm whitespace-nowrap">
+            <span>Inspect</span>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
           </button>
         </td>
       </tr>
     `;
   }).join('');
 
-  lucide.createIcons();
+  if (window.lucide) lucide.createIcons();
 }
 
 // ─── Inspect Job in Queue ────────────────────────────────────────────────────
@@ -591,7 +789,7 @@ async function openWorkspace(jobId, docId) {
       `).join('');
     }
 
-    // Evidence image
+    // Evidence image & Map Viewport setup
     const imgEl = document.getElementById('ws-evidence-image');
     const placeholder = document.getElementById('ws-image-placeholder');
     let primaryCropUrl = null;
@@ -600,14 +798,23 @@ async function openWorkspace(jobId, docId) {
       if (itemWithCrop) primaryCropUrl = itemWithCrop.crop_url;
     }
     const fallbackMapUrl = `/api/v1/evidence/${jobId}/${data.document_id || docId}/map-image`;
-    const targetUrl = primaryCropUrl || fallbackMapUrl;
+    
+    currentCropUrl = primaryCropUrl || '';
+    currentFullMapUrl = fallbackMapUrl;
 
-    imgEl.onload = () => { imgEl.classList.remove('hidden'); placeholder.classList.add('hidden'); };
+    imgEl.onload = () => { imgEl.classList.remove('hidden'); placeholder.classList.add('hidden'); updateMapTransform(); };
     imgEl.onerror = () => {
-      if (!imgEl.src.endsWith('/map-image')) { imgEl.src = fallbackMapUrl; }
-      else { imgEl.classList.add('hidden'); placeholder.classList.remove('hidden'); }
+      if (!imgEl.src.endsWith('/map-image')) { 
+        imgEl.src = fallbackMapUrl; 
+      } else { 
+        imgEl.classList.add('hidden'); 
+        placeholder.classList.remove('hidden'); 
+      }
     };
-    imgEl.src = targetUrl;
+    
+    // Default to Full Map Plan with AOI Site Boundary tag
+    setMapImageView('map');
+    resetMapZoom();
 
     // Advisory Copilot
     if (data.advisory) {
@@ -689,5 +896,14 @@ window.addEventListener('DOMContentLoaded', () => {
   switchTab('dashboard');
   loadRecentJobs();
   loadQueue();
+});
+
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    const modal = document.getElementById('map-fullscreen-modal');
+    if (modal && !modal.classList.contains('hidden')) {
+      toggleMapFullscreen();
+    }
+  }
 });
 

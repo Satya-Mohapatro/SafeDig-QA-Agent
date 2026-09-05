@@ -1,8 +1,9 @@
 import pytest
 import httpx
 from src.api.app import app
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_FOLDER = "d:/Safedig_AG/Data/244414_201678"
+SAMPLE_FOLDER = str(SAMPLE_FOLDER_244414)
 
 @pytest.mark.anyio
 async def test_api_e2e_full_workflow():

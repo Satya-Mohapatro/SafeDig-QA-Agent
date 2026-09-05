@@ -2,8 +2,9 @@ import os
 import pytest
 from src.pdf import inspect_pdf, extract_page_vector_paths, extract_page_words_and_text
 from src.domain.enums import PDFModality
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_PDF = r"d:\Safedig_AG\Data\244414_201678\42332089_NGED - Wales.pdf"
+SAMPLE_PDF = str(SAMPLE_NGED_PDF)
 
 def test_inspect_real_pdf():
     assert os.path.exists(SAMPLE_PDF)

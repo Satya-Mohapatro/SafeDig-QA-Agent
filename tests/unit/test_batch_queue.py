@@ -1,11 +1,12 @@
 import pytest
 from src.batch.queue import JobQueue
 from src.batch.models import JobTaskStatus
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
 def test_job_queue_basic_operations():
     q = JobQueue()
-    t1 = q.enqueue("d:/Safedig_AG/Data/244414_201678", priority=10, job_id="JOB-1")
-    t2 = q.enqueue("d:/Safedig_AG/Data/299208_172565", priority=5, job_id="JOB-2")  # Higher priority
+    t1 = q.enqueue(str(SAMPLE_FOLDER_244414), priority=10, job_id="JOB-1")
+    t2 = q.enqueue(str(DATA_DIR / "299208_172565"), priority=5, job_id="JOB-2")  # Higher priority
     
     assert t1.status == JobTaskStatus.QUEUED
     assert t2.status == JobTaskStatus.QUEUED
@@ -24,7 +25,7 @@ def test_job_queue_basic_operations():
 
 def test_job_queue_cancellation():
     q = JobQueue()
-    q.enqueue("d:/Safedig_AG/Data/534668_175407", priority=10, job_id="JOB-CANCEL")
+    q.enqueue(str(DATA_DIR / "534668_175407"), priority=10, job_id="JOB-CANCEL")
     cancelled = q.cancel("JOB-CANCEL")
     assert cancelled is True
     

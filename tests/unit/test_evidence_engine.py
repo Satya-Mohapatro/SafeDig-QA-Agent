@@ -5,8 +5,9 @@ from src.domain.document import Document
 from src.domain.aoi import AOI
 from src.domain.reconciliation import ReconciliationResult
 from src.domain.enums import ReconciliationOutcome, Severity, AOIDetectionMethod
+from tests.conftest import PROJECT_ROOT, DATA_DIR, SAMPLE_FOLDER_244414, SAMPLE_NGED_PDF
 
-SAMPLE_PDF = r"d:\Safedig_AG\Data\244414_201678\42332089_NGED - Wales.pdf"
+SAMPLE_PDF = str(SAMPLE_NGED_PDF)
 
 def test_build_evidence():
     doc = Document(

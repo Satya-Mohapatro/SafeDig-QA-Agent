@@ -313,9 +313,13 @@
     "independent_findings_count": 0,
     "reconciliation_outcome": "POSSIBLE_FALSE_POSITIVE",
     "decision": "HUMAN_REVIEW",
-    "reason": "HUMAN REVIEW: Upstream claimed warning 'There is a Trunk Main Line present in this area', but independent analysis found no intersecting assets.",
+    "reason": "Human Reviewer (QA_LEAD_USER) confirmed warning: Verified by reviewer in SafeDig QA Workspace.",
     "evidence_package_id": "PKG-DOC-FIL-0006",
-    "evidence_count": 2
+    "evidence_count": 2,
+    "human_disposition": "CONFIRM_WARNING",
+    "reviewer_id": "QA_LEAD_USER",
+    "reviewer_comment": "Verified by reviewer in SafeDig QA Workspace.",
+    "disposition_timestamp": "2026-09-04T14:07:49.589554"
   },
   {
     "index_record_id": "IDX-JOB-547960_159487-037",
