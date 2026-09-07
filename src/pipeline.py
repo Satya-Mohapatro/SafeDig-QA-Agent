@@ -24,6 +24,8 @@ def run_map_qa_pipeline(
     job_id: Optional[str] = None,
     output_dir: Optional[str] = None
 ) -> Dict[str, Any]:
+    from src.utils.paths import resolve_folder_path, resolve_index_path
+    root_dir = resolve_folder_path(root_dir)
     folder_name = os.path.basename(os.path.abspath(root_dir))
     job_id = job_id or f"JOB-{folder_name}"
     out_dir = output_dir or os.path.join(settings.output_dir, job_id)
@@ -48,11 +50,16 @@ def run_map_qa_pipeline(
     if not index_files:
         index_files = [f for f in discovered if f.extension in [".xlsx", ".xls"]]
     if not index_files:
-        logger.error(f"No index Excel found in {root_dir}")
-        return {"job_id": job_id, "error": "Index missing", "decision": Decision.BLOCKED.value}
-    
-    index_file = index_files[0]
-    index_path = index_file.metadata.get("full_path", os.path.join(root_dir, index_file.filename))
+        res_idx = resolve_index_path(root_dir)
+        if not os.path.exists(res_idx):
+            logger.error(f"No index Excel found in {root_dir}")
+            return {"job_id": job_id, "error": "Index missing", "decision": Decision.BLOCKED.value}
+        index_path = res_idx
+    else:
+        index_file = index_files[0]
+        index_path = index_file.metadata.get("full_path", os.path.join(root_dir, index_file.filename))
+        if not os.path.exists(index_path):
+            index_path = resolve_index_path(root_dir, preferred_name=index_file.filename)
     
     # ── Phase 3: Read-Only Index Parse ───────────────────────────────────────
     records = parse_index_excel(index_path, job_id)

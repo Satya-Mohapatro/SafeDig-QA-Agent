@@ -73,7 +73,8 @@ def get_review_workspace(job_id: str, document_id: str):
     with open(report_file, "r", encoding="utf-8") as f:
         rep_data = json.load(f)
         
-    root_dir = rep_data.get("root_dir", "")
+    from src.utils.paths import resolve_folder_path, resolve_index_path
+    root_dir = resolve_folder_path(rep_data.get("root_dir", ""))
     
     # Read document results to get row index
     results_file = os.path.join(job_out_dir, "document_results.json")
@@ -85,7 +86,7 @@ def get_review_workspace(job_id: str, document_id: str):
         raise HTTPException(status_code=404, detail=f"Document {document_id} not found in job {job_id}.")
         
     # Reconstruct domain objects to build full workspace payload
-    index_path = os.path.join(root_dir, "index.xlsx")
+    index_path = resolve_index_path(root_dir)
     from src.index import parse_index_excel
     from src.ingestion import scan_root_folder
     from src.documents import resolve_documents

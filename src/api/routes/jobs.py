@@ -95,16 +95,10 @@ def list_all_jobs():
 
 @router.post("/submit", response_model=JobSubmitResponse)
 def submit_job(req: JobSubmitRequest):
-    resolved_root = req.root_dir
+    from src.utils.paths import resolve_folder_path
+    resolved_root = resolve_folder_path(req.root_dir)
     if not os.path.exists(resolved_root):
-        cand1 = os.path.join(str(settings.data_dir), req.root_dir)
-        cand2 = os.path.join(str(settings.project_root), req.root_dir)
-        if os.path.exists(cand1):
-            resolved_root = cand1
-        elif os.path.exists(cand2):
-            resolved_root = cand2
-        else:
-            raise HTTPException(status_code=404, detail=f"Target root folder not found: {req.root_dir}")
+        raise HTTPException(status_code=404, detail=f"Target root folder not found: {req.root_dir}")
         
     folder_name = os.path.basename(os.path.abspath(resolved_root))
     job_id = req.job_id or f"JOB-{folder_name}"

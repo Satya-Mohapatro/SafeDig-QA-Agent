@@ -18,9 +18,22 @@ def generate_job_reports(
 
 
 
+    # Store clean portable path relative to project
+    portable_root = root_dir
+    norm = root_dir.replace("\\", "/")
+    norm_lower = norm.lower()
+    if "/data/" in norm_lower:
+        sub_rel = norm[norm_lower.index("/data/") + 6:].strip("/")
+        portable_root = f"Data/{sub_rel}"
+    elif norm_lower.startswith("data/"):
+        portable_root = norm
+    else:
+        folder_base = os.path.basename(norm.rstrip("/"))
+        portable_root = f"Data/{folder_base}"
+
     job_report = {
         "job_id": job_id,
-        "root_dir": root_dir,
+        "root_dir": portable_root,
         "overall_decision": overall_decision,
         "generated_at": datetime.utcnow().isoformat(),
         "summary": {

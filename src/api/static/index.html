@@ -442,8 +442,38 @@
 
             <!-- Viewport Container with Drag / Pan Support -->
             <div id="ws-viewport-container" class="relative bg-slate-950 rounded-xl border border-slate-800 min-h-[420px] h-[520px] flex items-center justify-center overflow-hidden select-none cursor-grab" onwheel="handleMapWheel(event)" onmousedown="startMapPan(event)" onmousemove="doMapPan(event)" onmouseup="endMapPan()" onmouseleave="endMapPan()">
+              
+              <!-- Map & AOI Inspection Loading Overlay -->
+              <div id="ws-map-loader" class="absolute inset-0 bg-slate-950/90 backdrop-blur-md z-30 flex flex-col items-center justify-center space-y-4 transition-opacity duration-300 hidden pointer-events-none">
+                <div class="relative w-20 h-20 flex items-center justify-center">
+                  <!-- Outer radar wave -->
+                  <div class="absolute inset-0 rounded-full border-2 border-blue-500/30 animate-ping" style="animation-duration: 2s;"></div>
+                  <!-- Inner radar pulse ring -->
+                  <div class="absolute inset-2 rounded-full border-2 border-indigo-500/40 animate-pulse"></div>
+                  <!-- Rotating high-tech spinner -->
+                  <div class="w-14 h-14 rounded-full border-[3px] border-slate-700/80 border-t-blue-500 border-r-indigo-400 animate-spin flex items-center justify-center shadow-xl shadow-blue-500/25"></div>
+                  <!-- Central Crosshair / Radar Icon -->
+                  <i data-lucide="crosshair" class="w-6 h-6 text-blue-400 absolute animate-pulse"></i>
+                </div>
+                <div class="text-center space-y-1.5 px-4">
+                  <div class="text-sm font-bold text-white tracking-wide flex items-center justify-center gap-2">
+                    <span>Rendering AOI Map Plan</span>
+                    <span class="inline-flex items-center gap-1">
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0s;"></span>
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.15s;"></span>
+                      <span class="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" style="animation-delay: 0.3s;"></span>
+                    </span>
+                  </div>
+                  <p id="ws-loader-status" class="text-xs text-slate-400 font-medium">Extracting dig site boundary &amp; vector asset linework (300 DPI)...</p>
+                  <div class="flex items-center justify-center gap-2 pt-1">
+                    <span class="px-2 py-0.5 text-[10px] font-mono bg-blue-500/10 text-blue-300 border border-blue-500/20 rounded-full">SafeDIG CV Engine</span>
+                    <span class="px-2 py-0.5 text-[10px] font-mono bg-indigo-500/10 text-indigo-300 border border-indigo-500/20 rounded-full">200/300 DPI Native</span>
+                  </div>
+                </div>
+              </div>
+
               <div id="ws-image-stage" class="transition-transform duration-75 origin-top-left flex items-center justify-center">
-                <img id="ws-evidence-image" src="" alt="Select document to view evidence" class="max-w-none object-contain pointer-events-none transition-opacity duration-150">
+                <img id="ws-evidence-image" src="" alt="Select document to view evidence" class="max-w-none object-contain pointer-events-none transition-opacity duration-200">
               </div>
               <div id="ws-image-placeholder" class="text-center p-6 text-slate-500 text-xs">
                 <i data-lucide="map-pin" class="w-8 h-8 mx-auto mb-2 text-slate-600"></i>

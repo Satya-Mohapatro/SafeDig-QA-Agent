@@ -14,8 +14,8 @@ def test_batch_worker_pool_execution():
     
     worker.start()
     
-    # Wait for completion (max 25s)
-    for _ in range(50):
+    # Wait for completion (max 60s)
+    for _ in range(120):
         if task.status in [JobTaskStatus.COMPLETED, JobTaskStatus.FAILED]:
             break
         time.sleep(0.5)

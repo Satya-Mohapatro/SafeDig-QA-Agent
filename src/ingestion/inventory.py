@@ -7,8 +7,11 @@ from .classifier import classify_file
 from src.config.logging import logger
 
 def scan_root_folder(root_dir: str) -> List[DiscoveredFile]:
-    if not os.path.exists(root_dir):
+    from src.utils.paths import resolve_folder_path
+    resolved_root = resolve_folder_path(root_dir)
+    if not os.path.exists(resolved_root):
         raise FileNotFoundError(f"Root folder does not exist: {root_dir}")
+    root_dir = resolved_root
         
     discovered: List[DiscoveredFile] = []
     file_counter = 1

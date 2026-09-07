@@ -69,7 +69,7 @@
     "human_disposition": "CONFIRM_WARNING",
     "reviewer_id": "API_QA_LEAD",
     "reviewer_comment": "Confirmed high pressure gas line hazard.",
-    "disposition_timestamp": "2026-09-04T13:23:02.426737"
+    "disposition_timestamp": "2026-09-06T05:52:29.861753"
   },
   {
     "index_record_id": "IDX-JOB-API-E2E-244414-008",
@@ -142,12 +142,12 @@
     "utility_name": "National Grid Electricity Distribution",
     "utility_type": "Electricity",
     "upstream_claim": null,
-    "independent_findings_count": 0,
-    "reconciliation_outcome": "CONFIRMED_CLEAN",
-    "decision": "AUTO_CLEAR",
-    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "independent_findings_count": 100,
+    "reconciliation_outcome": "MISSED_WARNING",
+    "decision": "HUMAN_REVIEW",
+    "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected 11kV High Voltage Overhead / Underground Asset",
     "evidence_package_id": "PKG-DOC-FIL-0001",
-    "evidence_count": 2
+    "evidence_count": 202
   },
   {
     "index_record_id": "IDX-JOB-API-E2E-244414-017",
@@ -324,12 +324,12 @@
     "utility_name": "Welsh Water",
     "utility_type": "Water",
     "upstream_claim": null,
-    "independent_findings_count": 0,
-    "reconciliation_outcome": "CONFIRMED_CLEAN",
-    "decision": "AUTO_CLEAR",
-    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "independent_findings_count": 2,
+    "reconciliation_outcome": "MISSED_WARNING",
+    "decision": "HUMAN_REVIEW",
+    "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected Clean Potable Water Distribution Main",
     "evidence_package_id": "PKG-DOC-FIL-0012",
-    "evidence_count": 2
+    "evidence_count": 6
   },
   {
     "index_record_id": "IDX-JOB-API-E2E-244414-039",
@@ -416,12 +416,12 @@
     "utility_name": "VM",
     "utility_type": "Telecom",
     "upstream_claim": null,
-    "independent_findings_count": 0,
-    "reconciliation_outcome": "CONFIRMED_CLEAN",
-    "decision": "AUTO_CLEAR",
-    "reason": "AUTO CLEAR: All 17 mandatory release gates passed and evidence is complete.",
+    "independent_findings_count": 1,
+    "reconciliation_outcome": "MISSED_WARNING",
+    "decision": "HUMAN_REVIEW",
+    "reason": "MANDATORY HUMAN REVIEW: MISSED WARNING: Upstream reported clean, but independent analysis detected Telecommunications Duct and Fibre Network",
     "evidence_package_id": "PKG-DOC-FIL-0011",
-    "evidence_count": 2
+    "evidence_count": 4
   },
   {
     "index_record_id": "IDX-JOB-API-E2E-244414-049",

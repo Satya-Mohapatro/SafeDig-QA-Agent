@@ -37,6 +37,9 @@ qa_output/
 scratch/
 tmp/
 
+#Data
+Data/
+
 # Testing & Coverage Caches
 .pytest_cache/
 .coverage

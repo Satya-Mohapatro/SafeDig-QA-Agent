@@ -39,7 +39,9 @@ def get_map_image(job_id: str, document_id: str):
         
     with open(report_file, "r", encoding="utf-8") as f:
         rep_data = json.load(f)
-    root_dir = rep_data.get("root_dir", "")
+        
+    from src.utils.paths import resolve_folder_path, resolve_file_path
+    root_dir = resolve_folder_path(rep_data.get("root_dir", ""))
     
     results_file = os.path.join(job_out_dir, "document_results.json")
     if not os.path.exists(results_file):
@@ -52,13 +54,14 @@ def get_map_image(job_id: str, document_id: str):
         raise HTTPException(status_code=404, detail=f"Document {document_id} not found.")
         
     fn = matched.get("filename")
-    pdf_path = os.path.join(root_dir, fn) if fn else None
+    pdf_path = resolve_file_path(fn, root_dir) if fn else None
     if not pdf_path or not os.path.exists(pdf_path):
-        # Search in root_dir
-        for root, _, files in os.walk(root_dir):
-            if fn and fn in files:
-                pdf_path = os.path.join(root, fn)
-                break
+        # Fallback search in root_dir
+        if os.path.exists(root_dir):
+            for root, _, files in os.walk(root_dir):
+                if fn and fn in files:
+                    pdf_path = os.path.join(root, fn)
+                    break
                 
     if not pdf_path or not os.path.exists(pdf_path):
         raise HTTPException(status_code=404, detail=f"Source PDF for {document_id} not found on disk.")

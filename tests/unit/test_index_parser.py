@@ -39,3 +39,44 @@ def test_resolve_documents_against_real_files():
     assert "VM.pdf" in resolved_filenames
     assert "W.pdf" in resolved_filenames
     assert "42332089_NGED - Wales.pdf" in resolved_filenames
+
+
+def test_parse_index_with_foreign_machine_path():
+    """Verify that paths from other machines are seamlessly resolved without FileNotFoundError."""
+    foreign_paths = [
+        "d:/Safedig_AG/data/244414_201678/index.xlsx",
+        "C:/Users/SomeUser/Desktop/SafeDig/Data/244414_201678/index.xlsx",
+        "/opt/safedig/Data/244414_201678/index.xlsx",
+        "Data/244414_201678/index.xlsx",
+        "244414_201678",
+    ]
+    for fp in foreign_paths:
+        records = parse_index_excel(fp, job_id="JOB-FOREIGN-TEST")
+        assert len(records) >= 50, f"Failed to parse records from foreign path: {fp}"
+
+
+def test_portable_paths_utility():
+    """Verify resolve_folder_path, resolve_index_path, and resolve_file_path."""
+    from src.utils.paths import resolve_folder_path, resolve_index_path, resolve_file_path
+    
+    # Folder resolution
+    f1 = resolve_folder_path("d:/Safedig_AG/data/244414_201678")
+    assert os.path.isdir(f1)
+    assert "244414_201678" in f1
+    
+    f2 = resolve_folder_path("244414_201678")
+    assert os.path.isdir(f2)
+    assert "244414_201678" in f2
+    
+    # Index resolution
+    idx1 = resolve_index_path("d:/Safedig_AG/data/244414_201678")
+    assert os.path.isfile(idx1)
+    assert idx1.lower().endswith((".xlsx", ".xls"))
+    
+    idx2 = resolve_index_path("d:/Safedig_AG/data/244414_201678/index.xlsx")
+    assert os.path.isfile(idx2)
+    
+    # File resolution
+    pdf = resolve_file_path("42332089_WWU.pdf", "d:/Safedig_AG/data/244414_201678")
+    assert os.path.isfile(pdf)
+

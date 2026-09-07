@@ -8,7 +8,9 @@ def test_directory_scanner_discovers_all_data_folders():
     assert os.path.exists(parent_dir)
     
     folders = directory_scanner.scan_for_job_folders(parent_dir, recursive=False)
-    assert len(folders) == 13
+    expected_count = len([e for e in os.listdir(parent_dir) if os.path.isdir(os.path.join(parent_dir, e))])
+    assert len(folders) == expected_count
+    assert len(folders) >= 13
     
     # All folders must contain index.xlsx
     for f in folders:

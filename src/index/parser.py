@@ -7,7 +7,13 @@ from src.config.logging import logger
 
 def parse_index_excel(excel_path: str, job_id: str) -> List[IndexRecord]:
     if not os.path.exists(excel_path):
-        raise FileNotFoundError(f"Index Excel file not found: {excel_path}")
+        from src.utils.paths import resolve_index_path
+        resolved = resolve_index_path(excel_path)
+        if os.path.exists(resolved):
+            logger.info(f"Portably resolved index path from '{excel_path}' to '{resolved}'")
+            excel_path = resolved
+        else:
+            raise FileNotFoundError(f"Index Excel file not found: {excel_path}")
         
     df = pd.read_excel(excel_path, sheet_name=0)
     

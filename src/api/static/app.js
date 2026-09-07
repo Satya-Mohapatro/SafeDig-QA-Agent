@@ -108,18 +108,26 @@ function setMapImageView(mode) {
   const btnCrop = document.getElementById('btn-view-crop');
   const imgEl = document.getElementById('ws-evidence-image');
 
+  let targetUrl = '';
   if (mode === 'map') {
     if (btnMap) btnMap.className = 'px-2 py-0.5 rounded text-blue-400 font-semibold bg-slate-800 transition';
     if (btnCrop) btnCrop.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-slate-200 transition';
-    if (imgEl && currentFullMapUrl) imgEl.src = currentFullMapUrl;
+    targetUrl = currentFullMapUrl;
   } else {
     if (btnCrop) btnCrop.className = 'px-2 py-0.5 rounded text-blue-400 font-semibold bg-slate-800 transition';
     if (btnMap) btnMap.className = 'px-2 py-0.5 rounded text-slate-400 hover:text-slate-200 transition';
-    if (imgEl && currentCropUrl) {
-      imgEl.src = currentCropUrl;
+    if (currentCropUrl) {
+      targetUrl = currentCropUrl;
     } else {
       showToast('No detailed hazard crop available; displaying full sheet plan.', 'info');
-      if (imgEl && currentFullMapUrl) imgEl.src = currentFullMapUrl;
+      targetUrl = currentFullMapUrl;
+    }
+  }
+
+  if (imgEl && targetUrl) {
+    if (!imgEl.src.endsWith(targetUrl)) {
+      showMapLoader(mode === 'map' ? 'Rendering Full Sheet Plan (300 DPI)...' : 'Loading Close-up Hazard Crop...');
+      imgEl.src = targetUrl;
     }
   }
   resetMapZoom();
@@ -740,12 +748,50 @@ function goBackFromWorkspace() {
   switchTab(workspacePreviousTab || 'maps');
 }
 
+function showMapLoader(message = 'Rendering AOI Map Plan (300 DPI)...') {
+  const loader = document.getElementById('ws-map-loader');
+  const status = document.getElementById('ws-loader-status');
+  const imgEl = document.getElementById('ws-evidence-image');
+  const placeholder = document.getElementById('ws-image-placeholder');
+
+  if (status) status.innerText = message;
+  if (loader) {
+    loader.classList.remove('hidden');
+    loader.classList.remove('opacity-0');
+    loader.classList.add('opacity-100');
+    if (window.lucide) window.lucide.createIcons();
+  }
+  if (imgEl) {
+    imgEl.classList.add('opacity-0');
+  }
+  if (placeholder) {
+    placeholder.classList.add('hidden');
+  }
+}
+
+function hideMapLoader() {
+  const loader = document.getElementById('ws-map-loader');
+  const imgEl = document.getElementById('ws-evidence-image');
+
+  if (loader) {
+    loader.classList.remove('opacity-100');
+    loader.classList.add('opacity-0');
+    setTimeout(() => {
+      loader.classList.add('hidden');
+    }, 250);
+  }
+  if (imgEl) {
+    imgEl.classList.remove('opacity-0');
+  }
+}
+
 // ─── Open QA Workspace ───────────────────────────────────────────────────────
 
 async function openWorkspace(jobId, docId) {
   currentJobId = jobId;
   currentDocumentId = docId;
   switchTab('workspace');
+  showMapLoader('Loading map workspace & rendering 300 DPI vector plan...');
 
   try {
     const resp = await fetch(`/api/v1/qa/workspace/${jobId}/${docId}`);
@@ -802,11 +848,17 @@ async function openWorkspace(jobId, docId) {
     currentCropUrl = primaryCropUrl || '';
     currentFullMapUrl = fallbackMapUrl;
 
-    imgEl.onload = () => { imgEl.classList.remove('hidden'); placeholder.classList.add('hidden'); updateMapTransform(); };
+    imgEl.onload = () => {
+      hideMapLoader();
+      imgEl.classList.remove('hidden');
+      placeholder.classList.add('hidden');
+      updateMapTransform();
+    };
     imgEl.onerror = () => {
       if (!imgEl.src.endsWith('/map-image')) { 
         imgEl.src = fallbackMapUrl; 
       } else { 
+        hideMapLoader();
         imgEl.classList.add('hidden'); 
         placeholder.classList.remove('hidden'); 
       }
@@ -840,6 +892,7 @@ async function openWorkspace(jobId, docId) {
 
     lucide.createIcons();
   } catch (err) {
+    hideMapLoader();
     showToast(`Failed to load workspace: ${err.message}`, 'error');
   }
 }

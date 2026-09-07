@@ -27,7 +27,12 @@ class WorkspacePayloadBuilder:
         matched_file: DiscoveredFile,
         output_dir: Optional[str] = None
     ) -> ReviewWorkspacePayload:
+        from src.utils.paths import resolve_folder_path, resolve_file_path
+        root_dir = resolve_folder_path(root_dir)
         pdf_path = matched_file.metadata.get("full_path", os.path.join(root_dir, matched_file.filename))
+        if not os.path.exists(pdf_path):
+            pdf_path = resolve_file_path(matched_file.filename, root_dir)
+            
         doc_id = f"DOC-{matched_file.file_id}"
         from src.config.settings import settings
         out_dir = output_dir or os.path.join(settings.output_dir, job_id)

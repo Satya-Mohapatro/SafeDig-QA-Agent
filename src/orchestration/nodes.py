@@ -26,7 +26,9 @@ from src.config.logging import logger
 from src.orchestration.state import MapQAState
 
 def ingest_and_index_node(state: MapQAState) -> MapQAState:
-    root_dir = state["root_dir"]
+    from src.utils.paths import resolve_folder_path, resolve_index_path
+    root_dir = resolve_folder_path(state.get("root_dir", ""))
+    state["root_dir"] = root_dir
     job_id = state.get("job_id", f"JOB-{os.path.basename(os.path.abspath(root_dir))}")
     run_id = state.get("workflow_run_id", f"RUN-{uuid.uuid4().hex[:8]}")
     out_dir = state.get("output_dir", os.path.join(settings.output_dir, job_id))
@@ -42,16 +44,21 @@ def ingest_and_index_node(state: MapQAState) -> MapQAState:
         index_files = [f for f in discovered if f.extension in [".xlsx", ".xls"]]
         
     if not index_files:
-        logger.error(f"No index Excel found in {root_dir}")
-        return {
-            **state,
-            "status": "FAILED",
-            "overall_decision": Decision.BLOCKED.value,
-            "error_state": {"error": "Missing mandatory index Excel file."}
-        }
-        
-    index_file = index_files[0]
-    index_path = index_file.metadata.get("full_path", os.path.join(root_dir, index_file.filename))
+        res_idx = resolve_index_path(root_dir)
+        if not os.path.exists(res_idx):
+            logger.error(f"No index Excel found in {root_dir}")
+            return {
+                **state,
+                "status": "FAILED",
+                "overall_decision": Decision.BLOCKED.value,
+                "error_state": {"error": "Missing mandatory index Excel file."}
+            }
+        index_path = res_idx
+    else:
+        index_file = index_files[0]
+        index_path = index_file.metadata.get("full_path", os.path.join(root_dir, index_file.filename))
+        if not os.path.exists(index_path):
+            index_path = resolve_index_path(root_dir, preferred_name=index_file.filename)
     
     records = parse_index_excel(index_path, job_id)
     val_report = validate_index_records(records)
