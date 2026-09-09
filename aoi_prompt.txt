@@ -1,0 +1,569 @@
+<USER_REQUEST>
+now the main thing pls do it perfectly
+We need to fix the AOI (Area of Interest / dig area) detection in SafeDig-QA-Agent.
+
+This is a critical production requirement.
+
+IMPORTANT:
+Do NOT treat this as a simple bounding-box detection problem.
+
+The AOI must represent the ACTUAL DIG AREA ON THE MAP.
+
+The following rules are mandatory.
+
+==================================================
+1. PRIMARY AOI RULE
+==================================================
+
+The AOI must be derived from the actual map's dig-site geometry.
+
+If the map explicitly contains an AOI / DIG SITE / SITE BOUNDARY / WORK AREA boundary, that boundary is authoritative.
+
+Examples include:
+
+- red "AOI SITE BOUNDARY"
+- red rectangular dig-site boundary
+- circular dig area
+- polygonal dig area
+- other clearly marked work/dig boundary
+
+The detector must identify and use the actual boundary geometry.
+
+Do NOT automatically create a rectangular page/image bounding box around detected content.
+
+==================================================
+2. CIRCULAR DIG AREA
+==================================================
+
+This is especially important.
+
+If the source map shows a circular dig area, the generated AOI MUST also be circular.
+
+Do NOT convert:
+
+    circle → bounding rectangle
+
+Do NOT use:
+
+    circle → arbitrary polygon approximation that materially changes the boundary
+
+The AOI should preserve the detected circle's:
+
+- center
+- radius
+- shape
+- position
+- scale
+
+The resulting AOI must be spatially aligned with the circle shown on the map.
+
+The circle must be mapped to the correct map coordinate/pixel space.
+
+==================================================
+3. RECTANGULAR / POLYGONAL DIG AREA
+==================================================
+
+If the source map contains a rectangular or polygonal AOI boundary:
+
+- detect its actual boundary
+- preserve its geometry
+- preserve its orientation
+- preserve its position
+- do not expand it unnecessarily
+- do not clip it incorrectly
+
+The AOI should follow the actual boundary rather than creating a generic padded rectangle.
+
+==================================================
+4. AOI MUST NOT INCLUDE LEGENDS OR PAGE FURNITURE
+==================================================
+
+This is currently a major problem.
+
+The AOI must represent ONLY the actual map/dig area.
+
+Never include:
+
+- legend
+- key to symbols
+- title block
+- company logo
+- disclaimer
+- copyright text
+- contact details
+- email address
+- QR code
+- warning text
+- scale bar
+- north arrow
+- page footer
+- document header
+- metadata tables
+- map notes outside the actual map
+- document borders
+
+For example, if a map has:
+
+    ┌─────────────────────────────┐
+    │         HEADER              │
+    │                             │
+    │   ┌─────────────────────┐   │
+    │   │                     │   │
+    │   │     ACTUAL MAP      │   │
+    │   │                     │   │
+    │   └─────────────────────┘   │
+    │                             │
+    │ LEGEND / DISCLAIMER / FOOTER│
+    └─────────────────────────────┘
+
+the AOI must be restricted to the ACTUAL MAP region.
+
+It must NOT include the legend/footer.
+
+==================================================
+5. DISTINGUISH PAGE REGION FROM MAP REGION
+==================================================
+
+Introduce an explicit concept of:
+
+    PAGE_REGION
+    MAP_REGION
+    DIG_AOI
+
+These are NOT the same thing.
+
+Pipeline:
+
+    PDF PAGE
+       ↓
+    identify actual MAP REGION
+       ↓
+    detect DIG/AOI boundary inside MAP REGION
+       ↓
+    construct DIG_AOI
+       ↓
+    run downstream spatial/QA analysis
+
+Do not use the entire PDF page as the AOI.
+
+If the PDF contains a map plus legend/footer/header, first isolate the map region.
+
+==================================================
+6. NO DIG SITE PRESENT
+==================================================
+
+This rule is mandatory:
+
+If no explicit dig-site/AOI boundary is present on the map, then:
+
+    DIG_AOI = entire ACTUAL MAP REGION
+
+NOT:
+
+    DIG_AOI = entire PDF page
+
+NOT:
+
+    DIG_AOI = page border
+
+NOT:
+
+    DIG_AOI = legend + map + footer
+
+Instead:
+
+    DIG_AOI = map viewport/content region only.
+
+==================================================
+7. RED AOI BOUNDARY
+==================================================
+
+Many of these engineering maps use a red boundary labelled:
+
+    AOI SITE BOUNDARY
+
+Treat this as a high-confidence AOI signal.
+
+The detector should:
+
+1. detect the red boundary
+2. determine whether it is an AOI/site boundary
+3. extract its actual geometry
+4. map the geometry into the PDF/image coordinate system
+5. create the AOI from that geometry
+
+Do not simply detect red pixels and calculate a loose bounding box.
+
+The geometry should be reconstructed from the boundary itself.
+
+==================================================
+8. IMAGE + PDF VECTOR HYBRID
+==================================================
+
+Use the strongest available evidence.
+
+Priority should be approximately:
+
+    1. PDF vector geometry / explicit AOI boundary
+    2. clearly detected map boundary
+    3. CV geometry detection
+    4. OCR/text evidence such as "AOI SITE BOUNDARY"
+    5. other visual inference
+    6. AI/ML only as supporting evidence
+
+AI MAY be used to help identify the map region or boundary.
+
+However:
+
+AI MUST NOT be the sole authority for the final AOI.
+
+The final AOI must be deterministic/validated.
+
+==================================================
+9. PDF COORDINATE SYSTEM
+==================================================
+
+Be extremely careful about coordinate transforms.
+
+PDF coordinates and rendered-image coordinates may have different:
+
+- origin
+- Y direction
+- scale
+- DPI
+- page dimensions
+
+Therefore:
+
+    PDF geometry
+          ↓
+    coordinate transform
+          ↓
+    rendered image
+          ↓
+    detected AOI
+
+must preserve exact spatial alignment.
+
+A circle in PDF space must remain a circle in the corresponding map coordinate system.
+
+A rectangle must not shift or stretch.
+
+==================================================
+10. AOI VALIDATION
+==================================================
+
+After detecting an AOI, run deterministic validation.
+
+At minimum validate:
+
+- AOI is inside the map region
+- AOI does not include legend region
+- AOI does not include footer/header
+- AOI does not include document furniture
+- AOI has valid geometry
+- AOI has non-zero area
+- AOI is within page bounds
+- AOI is spatially aligned with the source boundary
+- AOI does not extend outside the detected dig boundary
+- geometry type is preserved where confidently detected
+
+For a detected circular AOI:
+
+    geometry type = circle / circular geometry
+
+For rectangular AOI:
+
+    geometry type = polygon/rectangle
+
+For polygonal AOI:
+
+    geometry type = polygon
+
+==================================================
+11. DO NOT USE BLIND PADDING
+==================================================
+
+Do not use a generic rule such as:
+
+    detected_box.expand(10%)
+
+or:
+
+    bbox + fixed pixel margin
+
+for the final AOI.
+
+Padding can cause exactly the current problem where the AOI extends beyond the actual dig area.
+
+If a small tolerance is required for detection, keep it internal to detection/validation and do NOT enlarge the final AOI unnecessarily.
+
+==================================================
+12. AOI CONFIDENCE / EVIDENCE
+==================================================
+
+The AOI result should contain structured evidence.
+
+For example:
+
+    AOIResult(
+        geometry=...,
+        geometry_type="circle",
+        source="explicit_site_boundary",
+        confidence=...,
+        map_region=...,
+        evidence=[...]
+    )
+
+Possible source values:
+
+    explicit_vector_boundary
+    explicit_site_boundary
+    detected_circle
+    detected_polygon
+    map_region_fallback
+
+This allows the UI and audit system to understand why the AOI was selected.
+
+==================================================
+13. FAIL-SAFE BEHAVIOR
+==================================================
+
+If an explicit boundary is detected but its geometry cannot be reliably reconstructed:
+
+DO NOT silently fall back to an arbitrary oversized rectangle.
+
+Instead:
+
+    AOI_VALIDATION = REVIEW_REQUIRED
+
+and preserve the evidence explaining why.
+
+The system must never silently expand the AOI and continue as though it were correct.
+
+==================================================
+14. IMPORTANT EXAMPLES FROM THE CURRENT OUTPUT
+==================================================
+
+Use the supplied example maps as regression cases.
+
+CASE A:
+A map contains a red rectangular "AOI SITE BOUNDARY".
+
+Expected:
+
+    AOI = exactly that rectangle
+
+NOT:
+
+    larger rectangle around the page/map
+
+CASE B:
+A map contains a circular dig area.
+
+Expected:
+
+    AOI = the circular dig area
+
+NOT:
+
+    rectangle surrounding the circle
+
+CASE C:
+A Welsh Water / utility map contains the actual map plus:
+
+- legend on the right
+- notes/disclaimer at bottom
+- company logo
+- title/header
+
+Expected:
+
+    AOI = only actual map region / detected dig boundary
+
+The legend must NOT be part of AOI.
+
+CASE D:
+A map contains a clearly defined dig boundary plus legend/footer.
+
+Expected:
+
+    AOI = dig boundary only.
+
+CASE E:
+No dig-site boundary exists.
+
+Expected:
+
+    AOI = actual map region
+
+NOT the entire PDF page.
+
+==================================================
+15. CODE INVESTIGATION BEFORE CHANGES
+==================================================
+
+Before changing code, trace the existing AOI pipeline completely.
+
+Inspect:
+
+- src/spatial/aoi_detector.py
+- src/spatial/
+- pipeline.py
+- nodes.py
+- graph.py
+- PDF rendering code
+- PDF/vector extraction code
+- any OCR/CV preprocessing used for AOI
+- any code creating shapely AOI geometries
+- any code converting pixel coordinates to PDF/map coordinates
+
+Find exactly where the current oversized/rectangular AOI is created.
+
+Do not add a second competing AOI implementation.
+
+Modify the existing architecture cleanly.
+
+==================================================
+16. REQUIRED ARCHITECTURE
+==================================================
+
+Implement the AOI pipeline approximately as:
+
+    PDF
+     │
+     ├── PDF/vector analysis
+     │
+     ├── render map
+     │
+     └── OCR/CV evidence
+             │
+             ↓
+       MAP REGION DETECTOR
+             │
+             ↓
+       DIG BOUNDARY DETECTOR
+             │
+       ┌─────┼─────────────┐
+       │     │             │
+     circle rectangle    polygon
+       │     │             │
+       └─────┼─────────────┘
+             ↓
+        AOI GEOMETRY
+             ↓
+       AOI VALIDATOR
+             ↓
+        FINAL DIG_AOI
+             ↓
+       spatial QA / hazards
+
+If no dig boundary:
+
+    MAP REGION
+        ↓
+    FINAL DIG_AOI
+
+==================================================
+17. AI USAGE
+==================================================
+
+AI is allowed as a supporting detector.
+
+For example, AI/CV can help answer:
+
+    "Where is the actual map region?"
+
+or:
+
+    "Is this visual boundary likely the dig area?"
+
+But AI must NOT directly decide the final safety-critical AOI without deterministic validation.
+
+The final AOI must pass geometry and spatial validation.
+
+==================================================
+18. TESTS
+==================================================
+
+Add regression tests for:
+
+1. rectangular AOI
+2. circular AOI
+3. polygon AOI
+4. map + legend
+5. map + footer
+6. map + header
+7. map + legend + footer
+8. no explicit dig boundary
+9. AOI near map edge
+10. AOI with rotated/diagonal geometry
+11. PDF vector boundary + rendered image
+12. coordinate transform accuracy
+
+Specifically verify:
+
+    legend is outside AOI
+
+    footer is outside AOI
+
+    header is outside AOI
+
+    circle remains circular
+
+    AOI does not extend beyond source boundary
+
+    no-boundary fallback uses MAP_REGION rather than PAGE_REGION
+
+==================================================
+19. DO NOT MODIFY UNRELATED LOGIC
+==================================================
+
+For this task, do NOT change:
+
+- index resolution
+- warning detection
+- hazard classification
+- 17-gate release policy
+- upstream/downstream reconciliation
+- document resolution
+- final QA decision logic
+
+Only make the changes required for the AOI/map-region problem.
+
+==================================================
+20. FINAL VALIDATION REPORT
+==================================================
+
+After implementation, report:
+
+1. Files changed
+2. Existing AOI logic/problem
+3. Exact root cause
+4. New AOI detection flow
+5. How circles are preserved
+6. How explicit site boundaries are handled
+7. How legends are excluded
+8. How no-boundary maps fall back to MAP_REGION
+9. Coordinate-transform handling
+10. Tests added
+11. Test results
+12. Any remaining limitations
+
+Most importantly:
+
+DO NOT consider the task complete merely because the AOI looks approximately correct.
+
+The acceptance criterion is:
+
+    FINAL DIG_AOI MUST REPRESENT THE ACTUAL DIG AREA
+    AND MUST NOT INCLUDE NON-MAP PAGE CONTENT.
+
+The AOI is safety-critical and mandatory for downstream spatial validation.
+</USER_REQUEST>
+<ADDITIONAL_METADATA>
+The current local time is: 2026-09-08T21:06:00+05:30.
+</ADDITIONAL_METADATA>
+<USER_SETTINGS_CHANGE>
+The user changed setting `Model Selection` from Gemini 3.8 Flash (High) to Claude Sonnet 4.6 (Thinking). No need to comment on this change if the user doesn't ask about it. If reporting what model you are, please use a human readable name instead of the exact string.
+</USER_SETTINGS_CHANGE>

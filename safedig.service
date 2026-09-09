@@ -1,0 +1,16 @@
+[Unit]
+Description=SafeDig AI Map QA & Validation Platform
+After=network.target
+
+[Service]
+Type=simple
+User=safedig
+WorkingDirectory=/opt/safedig
+ExecStart=/opt/safedig/venv/bin/python -m uvicorn src.api.app:create_app --factory --host 0.0.0.0 --port 8000 --workers 4
+Restart=always
+RestartSec=5
+Environment=SAFEDIG_OUTPUT_DIR=/opt/safedig/qa_output
+Environment=SAFEDIG_SQLITE_URL=sqlite+aiosqlite:////opt/safedig/safedig.db
+
+[Install]
+WantedBy=multi-user.target
