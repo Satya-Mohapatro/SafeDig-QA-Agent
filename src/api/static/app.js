@@ -276,16 +276,26 @@ function onFolderInputChange() {
   const cardActions = document.getElementById('target-folder-actions');
 
   if (match) {
-    cardName.innerText = `Folder: ${folderBase} (${match.job_id})`;
-    cardStatus.innerText = match.decision;
-    cardStatus.className = `px-2 py-0.5 text-[10px] font-bold rounded-full ${decisionBadgeClass(match.decision)}`;
-    cardDesc.innerText = `Processed: ${match.records} maps | Auto-Clear: ${match.auto_clear} | Review: ${match.human_review} | Blocked: ${match.blocked}`;
+    cardName.innerText = `Directory: ${folderBase}`;
+    cardStatus.innerText = 'Scanned';
+    cardStatus.className = 'px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700';
+    cardDesc.innerHTML = `
+      <div class="flex items-center gap-3 mt-1 text-[11px] text-slate-400 font-mono flex-wrap">
+        <span><strong class="text-slate-100">${match.records}</strong> total maps</span>
+        <span class="text-slate-600">•</span>
+        <span class="text-emerald-400"><strong class="font-bold">${match.auto_clear}</strong> auto-cleared</span>
+        <span class="text-slate-600">•</span>
+        <span class="text-amber-400"><strong class="font-bold">${match.human_review}</strong> review</span>
+        <span class="text-slate-600">•</span>
+        <span class="text-rose-400"><strong class="font-bold">${match.blocked}</strong> blocked</span>
+      </div>
+    `;
     cardActions.innerHTML = `
-      <button onclick="viewJobMaps('${match.job_id}')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center space-x-1.5">
+      <button onclick="viewJobMaps('${match.job_id}')" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shadow-md shadow-blue-500/20 transition-all flex items-center space-x-1.5">
         <i data-lucide="table" class="w-3.5 h-3.5"></i>
-        <span>View All Maps (${match.records})</span>
+        <span>Inspect Maps (${match.records})</span>
       </button>
-      <button onclick="inspectJobInQueue('${match.job_id}')" class="px-3 py-1.5 bg-amber-600/20 hover:bg-amber-600/40 text-amber-300 rounded-lg text-xs font-semibold border border-amber-500/30 transition-all flex items-center space-x-1.5">
+      <button onclick="inspectJobInQueue('${match.job_id}')" class="px-3 py-1.5 bg-amber-600/15 hover:bg-amber-600/30 text-amber-300 rounded-xl text-xs font-semibold border border-amber-500/30 transition-all flex items-center space-x-1.5">
         <i data-lucide="inbox" class="w-3.5 h-3.5"></i>
         <span>QA Queue (${match.human_review})</span>
       </button>
@@ -294,7 +304,7 @@ function onFolderInputChange() {
   } else {
     cardName.innerText = `Folder: ${folderBase}`;
     cardStatus.innerText = 'Ready to Run';
-    cardStatus.className = 'px-2 py-0.5 text-[10px] font-semibold rounded-full bg-blue-500/20 text-blue-300 border border-blue-500/30';
+    cardStatus.className = 'px-2.5 py-0.5 text-[10px] font-semibold rounded-full bg-blue-500/15 text-blue-300 border border-blue-500/30';
     cardDesc.innerText = "Click 'Run QA Pipeline' to execute deterministic verification on this folder.";
     cardActions.innerHTML = '';
     renderJobsTable(allLoadedJobs);
@@ -427,7 +437,7 @@ function renderJobsTable(jobs, highlightJobId = null) {
   const tbody = document.getElementById('jobs-table-body');
   if (!tbody) return;
   if (!jobs || jobs.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="7" class="py-8 text-center text-slate-500 text-xs">No jobs found. Run a QA Pipeline to get started.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="py-10 text-center text-slate-500 text-xs">No jobs found. Run a QA Pipeline to get started.</td></tr>`;
     return;
   }
 
@@ -435,29 +445,34 @@ function renderJobsTable(jobs, highlightJobId = null) {
     const isHighlight = highlightJobId && j.job_id === highlightJobId;
     const ts = j.generated_at ? new Date(j.generated_at).toLocaleString() : '--';
     return `
-      <tr class="transition-colors ${isHighlight ? 'bg-blue-950/40 border-l-4 border-blue-500' : 'hover:bg-slate-800/50'}">
-        <td class="py-3 px-4">
+      <tr class="transition-colors ${isHighlight ? 'bg-blue-950/30 border-l-4 border-blue-500' : 'hover:bg-slate-800/40'}">
+        <td class="py-3.5 px-4">
           <div class="flex items-center gap-2">
-            <span class="font-mono font-bold text-slate-200">${j.job_id}</span>
+            <span class="font-mono font-bold text-slate-100 text-xs">${j.job_id}</span>
             ${isHighlight ? '<span class="px-1.5 py-0.2 text-[9px] bg-blue-500 text-white font-bold rounded">SELECTED</span>' : ''}
           </div>
-          <div class="text-[10px] text-slate-500 truncate max-w-xs">${j.root_dir || ''}</div>
-          <div class="text-[10px] text-slate-600">${ts}</div>
+          <div class="text-[11px] text-slate-400 truncate max-w-sm mt-0.5">${j.root_dir || ''}</div>
+          <div class="text-[10px] text-slate-500 mt-0.5 font-mono">${ts}</div>
         </td>
-        <td class="py-3 px-4 text-center font-bold text-slate-200">${j.records}</td>
-        <td class="py-3 px-4 text-center font-bold text-emerald-400">${j.auto_clear}</td>
-        <td class="py-3 px-4 text-center font-bold text-amber-400">${j.human_review}</td>
-        <td class="py-3 px-4 text-center font-bold text-rose-400">${j.blocked}</td>
-        <td class="py-3 px-4">
-          <span class="px-2 py-0.5 text-[10px] font-bold rounded-full ${decisionBadgeClass(j.decision)}">${j.decision}</span>
+        <td class="py-3.5 px-4 text-center">
+          <span class="px-2.5 py-1 rounded-lg bg-slate-800/90 text-slate-200 font-mono font-bold text-xs border border-slate-700/60">${j.records}</span>
         </td>
-        <td class="py-3 px-4 text-right">
-          <div class="flex items-center justify-end gap-1.5">
-            <button onclick="viewJobMaps('${j.job_id}')" class="px-2.5 py-1 bg-blue-600/20 hover:bg-blue-600/50 text-blue-300 rounded-lg text-[10px] font-bold border border-blue-500/30 transition-all flex items-center gap-1">
-              <i data-lucide="table" class="w-3 h-3"></i> View All Maps
+        <td class="py-3.5 px-4 text-center">
+          <span class="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 font-mono font-bold text-xs border border-emerald-500/25">${j.auto_clear}</span>
+        </td>
+        <td class="py-3.5 px-4 text-center">
+          <span class="px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 font-mono font-bold text-xs border border-amber-500/25">${j.human_review}</span>
+        </td>
+        <td class="py-3.5 px-4 text-center">
+          <span class="px-2.5 py-1 rounded-lg bg-rose-500/10 text-rose-400 font-mono font-bold text-xs border border-rose-500/25">${j.blocked}</span>
+        </td>
+        <td class="py-3.5 px-4 text-right">
+          <div class="flex items-center justify-end gap-2">
+            <button onclick="viewJobMaps('${j.job_id}')" class="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 rounded-lg text-xs font-semibold border border-blue-500/30 transition-all flex items-center gap-1.5 shadow-sm">
+              <i data-lucide="table" class="w-3.5 h-3.5"></i> Inspect Maps
             </button>
-            <button onclick="inspectJobInQueue('${j.job_id}')" class="px-2.5 py-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 rounded-lg text-[10px] font-bold border border-amber-500/30 transition-all flex items-center gap-1">
-              <i data-lucide="inbox" class="w-3 h-3"></i> Queue
+            <button onclick="inspectJobInQueue('${j.job_id}')" class="px-2.5 py-1.5 bg-amber-500/10 hover:bg-amber-500/25 text-amber-300 rounded-lg text-xs font-semibold border border-amber-500/30 transition-all flex items-center gap-1.5">
+              <i data-lucide="inbox" class="w-3.5 h-3.5"></i> Queue
             </button>
           </div>
         </td>
@@ -505,13 +520,6 @@ async function fetchAndRenderMaps(jobId) {
     if (statHr) statHr.innerText = hr;
     const statBl = document.getElementById('maps-stat-bl');
     if (statBl) statBl.innerText = bl;
-
-    const aggDec = bl > 0 ? 'BLOCKED' : hr > 0 ? 'HUMAN_REVIEW' : 'AUTO_CLEAR';
-    const decBadge = document.getElementById('maps-decision-badge');
-    if (decBadge) {
-      decBadge.innerText = `${aggDec} (${total} maps)`;
-      decBadge.className = `px-2 py-0.5 text-[10px] font-bold rounded-full ${decisionBadgeClass(aggDec)}`;
-    }
 
     const navBadge = document.getElementById('maps-badge');
     if (navBadge) {
@@ -824,16 +832,75 @@ async function openWorkspace(jobId, docId) {
     document.getElementById('ws-upstream-claim').innerText = data.upstream_claim || 'None (Clean)';
 
     const indepContainer = document.getElementById('ws-indep-findings');
-    if (!data.independent_findings || data.independent_findings.length === 0) {
+    
+    // Check for Discovered Assets (V2 Open-World Engine) or fallback to independent_findings
+    const hasDiscovered = data.discovered_assets && data.discovered_assets.length > 0;
+    const hasFindings = data.independent_findings && data.independent_findings.length > 0;
+
+    if (!hasDiscovered && !hasFindings) {
       indepContainer.innerHTML = '<span class="text-slate-400 italic">No hazard assets detected inside AOI.</span>';
+    } else if (hasDiscovered) {
+      const cardsHtml = data.discovered_assets.map((a) => {
+        const isInside = a.inside_aoi;
+        const insideBadge = isInside 
+          ? `<span class="px-2 py-0.5 text-[11px] bg-emerald-500/15 text-emerald-400 rounded-md font-medium border border-emerald-500/25 flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3 h-3"></i>Detected in AOI</span>`
+          : `<span class="px-2 py-0.5 text-[11px] bg-slate-800/60 text-slate-300 rounded-md font-medium border border-slate-700/50 flex items-center gap-1"><i data-lucide="map-pin" class="w-3 h-3"></i>Near AOI</span>`;
+
+        let severityClass = 'bg-slate-800 text-slate-300 border-slate-700';
+        let severityLabel = a.severity || 'INFO';
+        if (a.severity === 'HIGH' || a.severity === 'CRITICAL') {
+          severityClass = 'bg-rose-500/20 text-rose-300 border-rose-500/30';
+          severityLabel = 'HIGH HAZARD';
+        } else if (a.severity === 'MEDIUM') {
+          severityClass = 'bg-amber-500/20 text-amber-300 border-amber-500/30';
+          severityLabel = 'MEDIUM';
+        } else if (a.severity === 'LOW') {
+          severityClass = 'bg-sky-500/15 text-sky-300 border-sky-500/30';
+          severityLabel = 'ROUTINE';
+        }
+
+        const sevBadge = `<span class="px-2 py-0.5 text-[10px] rounded-md font-semibold border ${severityClass}">${severityLabel}</span>`;
+
+        // Subtitle context based on asset
+        let contextNote = '';
+        if (a.business_warning_text && a.business_warning_text.trim()) {
+          contextNote = a.business_warning_text.replace(/\|/g, '').trim();
+        } else {
+          contextNote = `${a.utility_type || 'Utility'} line identified via map scan`;
+        }
+
+        return `
+          <div class="bg-slate-900/90 p-3 rounded-xl border border-slate-800 hover:border-slate-750 transition space-y-2">
+            <div class="flex items-center justify-between gap-2">
+              <div class="flex items-center gap-2 min-w-0">
+                <span class="w-3 h-3 rounded-full flex-shrink-0 shadow-sm" style="background-color: ${a.color_hex || '#38BDF8'}"></span>
+                <span class="font-semibold text-slate-100 text-xs truncate">${a.normalized_class}</span>
+                <span class="text-[10px] text-slate-400">(${a.utility_type || 'Utility'})</span>
+              </div>
+              <div class="flex items-center gap-1.5 flex-shrink-0">
+                ${insideBadge}
+                ${sevBadge}
+              </div>
+            </div>
+            <div class="text-[11px] text-slate-400 pl-5 flex items-center justify-between">
+              <span>${contextNote}</span>
+              <span class="text-[10px] text-slate-400 font-mono">${isInside ? 'Crossing Area' : 'Adjacent'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      indepContainer.innerHTML = cardsHtml;
+      if (window.lucide) lucide.createIcons();
     } else {
       indepContainer.innerHTML = data.independent_findings.map(f => `
-        <div class="flex items-center justify-between bg-slate-950/80 px-2 py-1 rounded-lg border border-slate-800">
+        <div class="flex items-center justify-between bg-slate-950/80 px-2.5 py-1.5 rounded-lg border border-slate-800">
           <span class="font-medium text-slate-200">${f.business_warning_text}</span>
           <span class="px-1.5 py-0.2 text-[10px] bg-rose-500/20 text-rose-300 rounded font-semibold">${f.severity}</span>
         </div>
       `).join('');
     }
+
 
     // Evidence image & Map Viewport setup
     const imgEl = document.getElementById('ws-evidence-image');

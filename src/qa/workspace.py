@@ -42,13 +42,32 @@ class WorkspacePayloadBuilder:
         doc_obj = inspect_pdf(pdf_path, doc_id, job_id, matched_file.file_id, matched_file.sha256)
         
         # 2. Legend & AOI
-        legend = resolve_legend(record.utility_name)
+        evidence_dir = os.path.join(out_dir, "evidence")
+        os.makedirs(evidence_dir, exist_ok=True)
+        legend = resolve_legend(
+            record.utility_name,
+            pdf_path=pdf_path,
+            page_num=1,
+            output_crop_dir=evidence_dir,
+            document_id=doc_id
+        )
         aoi = get_document_aoi(pdf_path, doc_id, page_num=1)
         wdefs = master_warning_catalogue.get_definitions_for_provider(record.utility_name)
         
-        # 3. Detections & Reconciliation
+        # 3. Detections & Open-World Discovery
         from src.domain.warning import ClaimedWarning
         from src.domain.enums import Severity
+        from src.detection.discovery import discover_open_world_assets
+        
+        discovered_assets, scan_comp = discover_open_world_assets(
+            pdf_path=pdf_path,
+            document=doc_obj,
+            aoi=aoi,
+            legend_profile=legend,
+            warning_definitions=wdefs,
+            output_crop_dir=evidence_dir
+        )
+        
         claimed_w = None
         if record.raw_warning and record.raw_warning.strip():
             raw_w_lower = record.raw_warning.strip().lower()
@@ -65,9 +84,6 @@ class WorkspacePayloadBuilder:
                         severity=Severity.HIGH
                     )
                 else:
-                    # Positive claim with no catalogue match (e.g. Thames Water, BT).
-                    # Capture as uncatalogued HIGH so reconciler routes to
-                    # POSSIBLE_FALSE_POSITIVE → HUMAN_REVIEW instead of AUTO_CLEAR.
                     logger.warning(
                         f"Upstream warning '{record.raw_warning}' for provider "
                         f"'{record.utility_name}' has no catalogue match — "
@@ -82,13 +98,13 @@ class WorkspacePayloadBuilder:
                         severity=Severity.HIGH
                     )
 
-
-            
-        detected_cands = detect_independent_warnings(pdf_path, doc_obj, aoi, wdefs, legend)
+        detected_cands = detect_independent_warnings(
+            pdf_path, doc_obj, aoi, wdefs, legend, discovered_assets=discovered_assets
+        )
         reconcil_res = reconcile_warnings(doc_id, claimed_w, detected_cands)
         
         # 4. Evidence Package
-        ev_pkg = build_evidence_package(pdf_path, doc_obj, aoi, reconcil_res, output_dir=os.path.join(out_dir, "evidence"))
+        ev_pkg = build_evidence_package(pdf_path, doc_obj, aoi, reconcil_res, output_dir=evidence_dir)
         
         # 5. Policy Gates
         pol_res = policy_engine.evaluate(record, doc_obj, legend, aoi, reconcil_res, ev_pkg)
@@ -133,6 +149,35 @@ class WorkspacePayloadBuilder:
                 "bbox": c.bbox
             })
             
+        discovered_assets_data = []
+        for a in discovered_assets:
+            discovered_assets_data.append({
+                "asset_id": a.asset_id,
+                "normalized_class": a.normalized_class,
+                "raw_legend_label": a.raw_legend_label,
+                "utility": a.utility,
+                "utility_type": a.utility_type,
+                "inside_aoi": a.inside_aoi,
+                "spatial_relation": a.spatial_relation,
+                "classification_confidence": round(a.classification_confidence, 2),
+                "geometry_confidence": round(a.geometry_confidence, 2),
+                "spatial_confidence": round(a.spatial_confidence, 2),
+                "visual_confidence": round(a.visual_confidence, 2),
+                "overall_confidence": round(a.overall_confidence, 2),
+                "segment_count": a.segment_count,
+                "color_hex": a.color_hex,
+                "color_rgb": a.color_rgb,
+                "stroke_style": a.stroke_style,
+                "severity": a.severity.value,
+                "status": a.status,
+                "contract_match": a.contract_match,
+                "business_warning_text": a.business_warning_text,
+                "bbox": a.bbox
+            })
+
+        legend_crop_file = os.path.join(evidence_dir, f"legend_crop_{doc_id}.png")
+        legend_crop_url = f"/api/v1/evidence/{job_id}/{doc_id}/crop/legend_crop_{doc_id}.png" if os.path.exists(legend_crop_file) else None
+
         gates_dict = {k: v.model_dump() for k, v in pol_res.gates.items()}
         
         from src.api.schemas import ReviewWorkspacePayload
@@ -155,8 +200,11 @@ class WorkspacePayloadBuilder:
             reconciliation_outcome=reconcil_res.outcome.value,
             upstream_claim=record.raw_warning,
             independent_findings=indep_findings_data,
+            discovered_assets=discovered_assets_data,
+            scan_completeness=scan_comp.model_dump(),
             legend_id=legend.legend_id if legend else None,
             legend_features=legend_feats,
+            legend_crop_url=legend_crop_url,
             evidence_package_id=ev_pkg.package_id,
             evidence_items=evidence_items_data,
             advisory=adv.model_dump(),
@@ -164,5 +212,6 @@ class WorkspacePayloadBuilder:
             reason=pol_res.reason,
             gates=gates_dict
         )
+
 
 workspace_builder = WorkspacePayloadBuilder()

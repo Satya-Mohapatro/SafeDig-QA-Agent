@@ -10,38 +10,53 @@ class LegendRegistry:
         
     def _init_standard_profiles(self):
         # 1. SGN (Scotia Gas Networks)
+        # Authoritative colors from Map key.pdf & ground truth:
+        #   LP Gas: rgb=(255,0,0)    — pure red with PE/CI annotations (routine distribution mains)
+        #   MP Gas: rgb=(0,197,255)  — cyan / medium pressure
+        #   IP Gas: rgb=(85,255,0)   — green / intermediate pressure
+        #   HP Gas: rgb=(255,170,0)  — orange / local high pressure (LHP) & high pressure
+        # Note: rgb=(167,112,0) in SGN is OS basemap building footprints & parcels — NOT gas pipes.
         self.profiles["SGN"] = LegendProfile(
             legend_id="LGD-SGN",
             provider="SGN",
             utility_type="Gas",
-            version="1.2.0",
+            version="2.0.0",
             features=[
                 LegendFeature(
                     feature_id="SGN_HP_GAS",
                     warning_code="SGN_HP_GAS",
                     description="High Pressure Gas Main",
                     geometry_type=GeometryType.LINE,
-                    color=ColorSignature(rgb=(255, 0, 0), tolerance=40),  # Red
-                    stroke=StrokeStyle(min_width_pt=1.2, max_width_pt=6.0),
-                    text_labels=["HP", "HIGH PRESSURE", "GAS MAIN"]
+                    color=ColorSignature(rgb=(255, 170, 0), tolerance=45),  # Orange / LHP
+                    stroke=StrokeStyle(min_width_pt=1.0, max_width_pt=6.0),
+                    text_labels=["HP", "LHP", "HIGH PRESSURE", "LHP MAINS"]
+                ),
+                LegendFeature(
+                    feature_id="SGN_IP_GAS",
+                    warning_code="SGN_IP_GAS",
+                    description="Intermediate Pressure Gas Main",
+                    geometry_type=GeometryType.LINE,
+                    color=ColorSignature(rgb=(85, 255, 0), tolerance=45),  # Green
+                    stroke=StrokeStyle(min_width_pt=0.8, max_width_pt=6.0),
+                    text_labels=["IP", "INTERMEDIATE PRESSURE", "IP MAINS"]
                 ),
                 LegendFeature(
                     feature_id="SGN_MP_GAS",
                     warning_code="SGN_MP_GAS",
                     description="Medium Pressure Gas Main",
                     geometry_type=GeometryType.LINE,
-                    color=ColorSignature(rgb=(255, 140, 0), tolerance=40),  # Orange
-                    stroke=StrokeStyle(min_width_pt=1.0, max_width_pt=5.0),
-                    text_labels=["MP", "MEDIUM PRESSURE"]
+                    color=ColorSignature(rgb=(0, 197, 255), tolerance=50),  # Cyan
+                    stroke=StrokeStyle(min_width_pt=0.8, max_width_pt=5.0),
+                    text_labels=["MP", "MEDIUM PRESSURE", "MP MAINS"]
                 ),
                 LegendFeature(
                     feature_id="SGN_LP_GAS",
                     warning_code="SGN_LP_GAS",
                     description="Low Pressure Gas Main",
                     geometry_type=GeometryType.LINE,
-                    color=ColorSignature(rgb=(255, 255, 0), tolerance=40),  # Yellow
-                    stroke=StrokeStyle(min_width_pt=0.8, max_width_pt=4.0),
-                    text_labels=["LP", "LOW PRESSURE"]
+                    color=ColorSignature(rgb=(255, 0, 0), tolerance=45),  # Red
+                    stroke=StrokeStyle(min_width_pt=0.6, max_width_pt=4.0),
+                    text_labels=["LP", "LOW PRESSURE", "PE", "CI", "LP MAINS"]
                 )
             ]
         )

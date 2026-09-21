@@ -143,7 +143,15 @@ def run_map_qa_pipeline(
         
         # 7. Warning Definitions & Legend Resolution
         wdefs = master_warning_catalogue.get_definitions_for_provider(rec.utility_name)
-        legend = resolve_legend(rec.utility_name)
+        ev_dir = os.path.join(out_dir, "evidence")
+        os.makedirs(ev_dir, exist_ok=True)
+        legend = resolve_legend(
+            rec.utility_name,
+            pdf_path=pdf_path,
+            page_num=1,
+            output_crop_dir=ev_dir,
+            document_id=doc_id
+        )
         
         # 8. AOI Resolution
         aoi = get_document_aoi(pdf_path, doc_id, page_num=1)

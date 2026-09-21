@@ -72,10 +72,13 @@ class ReviewWorkspacePayload(BaseModel):
     reconciliation_outcome: str
     upstream_claim: Optional[str] = None
     independent_findings: List[Dict[str, Any]] = Field(default_factory=list)
+    discovered_assets: List[Dict[str, Any]] = Field(default_factory=list)
+    scan_completeness: Optional[Dict[str, Any]] = None
     
     # 4. Legend profile
     legend_id: Optional[str] = None
     legend_features: List[Dict[str, Any]] = Field(default_factory=list)
+    legend_crop_url: Optional[str] = None
     
     # 5. Evidence package
     evidence_package_id: str

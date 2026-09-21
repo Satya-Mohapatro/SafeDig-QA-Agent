@@ -184,7 +184,15 @@ def process_qa_and_policy_node(state: MapQAState) -> MapQAState:
         
         doc_obj = inspect_pdf(pdf_path, doc_id, job_id, matched_file.file_id, matched_file.sha256)
         wdefs = master_warning_catalogue.get_definitions_for_provider(rec.utility_name)
-        legend = resolve_legend(rec.utility_name)
+        ev_out_dir = os.path.join(out_dir, "evidence")
+        os.makedirs(ev_out_dir, exist_ok=True)
+        legend = resolve_legend(
+            rec.utility_name,
+            pdf_path=pdf_path,
+            page_num=1,
+            output_crop_dir=ev_out_dir,
+            document_id=doc_id
+        )
         aoi = get_document_aoi(pdf_path, doc_id, page_num=1)
         
         claimed_w = None

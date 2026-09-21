@@ -29,3 +29,5 @@ class LegendProfile(BaseModel):
     effective_date: str = "2026-01-01"
     source_document: Optional[str] = None
     features: List[LegendFeature] = Field(default_factory=list)
+    legend_crop_path: Optional[str] = None
+    dynamic_confidence: float = 0.95

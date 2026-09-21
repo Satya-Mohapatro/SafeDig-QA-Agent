@@ -4,8 +4,8 @@ from src.legends import master_legend_registry, resolve_legend
 def test_legend_profiles():
     sgn_lgd = master_legend_registry.get_profile("SGN")
     assert sgn_lgd is not None
-    assert sgn_lgd.version == "1.2.0"
-    assert len(sgn_lgd.features) >= 2
+    assert sgn_lgd.version == "2.0.0"
+    assert len(sgn_lgd.features) >= 4  # HP, IP, MP, LP Gas entries
     
     ukpn_lgd = resolve_legend("UKPN")
     assert ukpn_lgd is not None
