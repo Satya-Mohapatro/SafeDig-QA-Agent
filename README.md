@@ -12,18 +12,6 @@
 
 ---
 
-## 📚 Official Platform Documentation & Technical Guides
-
-Complete, publication-grade documentation is available in both **Markdown (`.md`)** and **PDF (`.pdf`)** formats in the repository root and the [`Documentation/`](Documentation/) directory:
-
-| Documentation Deliverable | Markdown Guide | Enterprise PDF Report | Description |
-| :--- | :--- | :--- | :--- |
-| **End-to-End System Architecture** | [`.md`](SafeDig_End_To_End_Architecture.md) | [`.pdf`](SafeDig_End_To_End_Architecture.pdf) | Exhaustive guide to problem context, 13-stage pipeline lifecycle, dual-engine design, and the 17 policy gates. |
-| **File-by-File Codebase Reference** | [`.md`](SafeDig_Codebase_File_By_File_Explanation.md) | [`.pdf`](SafeDig_Codebase_File_By_File_Explanation.pdf) | Detailed module-by-module walkthrough of every file across `src/`, data models, algorithms, and dependencies. |
-| **Complete Technology Stack Guide** | [`.md`](SafeDig_Complete_Tech_Stack_Guide.md) | [`.pdf`](SafeDig_Complete_Tech_Stack_Guide.pdf) | Deep dive into PyMuPDF, Shapely, OpenCV, FastAPI, LangGraph, local LLMs, architectural rationale, and hardware sizing. |
-
----
-
 ## 📌 Problem & Solution Overview
 
 When civil engineering contractors, highways authorities, and telecoms operators request utility plans before digging (under the UK **HSG47: Avoiding Danger from Underground Services** and **LinesearchbeforeUdig / LSBUD** workflows), utility undertakers issue dense multi-page PDF dossiers showing high-voltage electric cables, high-pressure gas mains, and trunk water pipelines.
