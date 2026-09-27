@@ -1,4 +1,30 @@
-# SafeDig AI — System Architecture & Flow Specification
+"""
+SafeDig AI - System Architecture & Project Flow Generator
+Outputs:
+1. Documentation/SafeDig_End_to_End_Project_Architecture.md
+2. Documentation/SafeDig_End_to_End_Project_Architecture.pdf
+3. SafeDig_End_to_End_Project_Architecture.pdf (Root mirror)
+"""
+
+import os
+import sys
+import shutil
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from tools.markdown_pdf_compiler import compile_markdown_to_pdf
+
+DOCS_DIR = r"D:\SafeDig_AG\Documentation"
+ROOT_DIR = r"D:\SafeDig_AG"
+MD_PATH = os.path.join(DOCS_DIR, "SafeDig_End_to_End_Project_Architecture.md")
+PDF_PATH = os.path.join(DOCS_DIR, "SafeDig_End_to_End_Project_Architecture.pdf")
+ROOT_PDF_PATH = os.path.join(ROOT_DIR, "SafeDig_End_to_End_Project_Architecture.pdf")
+
+os.makedirs(DOCS_DIR, exist_ok=True)
+
+MD_CONTENT = """# SafeDig AI — System Architecture & Flow Specification
 **UK Underground Utility Dig-Safety Map QA & Validation Platform**  
 **Compliance Standard**: UK Health and Safety Guidance 47 (HSG47) & CDM 2015  
 **Core Invariant**: Zero Escaped Hazards (`SAFE_MODE=True`)
@@ -152,3 +178,21 @@ SafeDig is packaged for containerized and on-premises high-reliability deploymen
 | **Safe Digging Buffer Zones** | HSG47 Para 48 | Automated 500mm hand-dig buffer, 3.0m High Voltage buffer, and 15.0m High-Pressure Gas exclusion zone. |
 | **Verification of Summary Claims** | CDM 2015 Reg 22 | Mandatory reconciliation algorithm specifically engineered to catch upstream "No assets affected" omissions. |
 | **Tamper-Proof Audit Record** | HSG47 Para 95 | Immutable SHA-256 hash snapshot of every input file, AOI coordinate set, gate evaluation, and engineer override in `safedig.db`. |
+"""
+
+def generate_architecture_documentation():
+    print(f"[1/2] Writing Markdown: {MD_PATH}")
+    with open(MD_PATH, 'w', encoding='utf-8') as f:
+        f.write(MD_CONTENT)
+        
+    print(f"[2/2] Compiling PDF: {PDF_PATH}")
+    compile_markdown_to_pdf(
+        MD_PATH,
+        PDF_PATH,
+        title="SafeDig AI — End-to-End Project Architecture",
+        subtitle="UK Underground Utility Dig-Safety Map QA & Validation Platform"
+    )
+    print("[SUCCESS] Architecture documentation generated successfully!")
+
+if __name__ == "__main__":
+    generate_architecture_documentation()

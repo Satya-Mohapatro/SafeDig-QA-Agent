@@ -1,4 +1,30 @@
-# SafeDig AI — Technology Stack Specification
+"""
+SafeDig AI - Technology Stack Specification Generator
+Outputs:
+1. Documentation/SafeDig_Technology_Stack_Specification.md
+2. Documentation/SafeDig_Technology_Stack_Specification.pdf
+3. SafeDig_Technology_Stack_Specification.pdf (Root mirror)
+"""
+
+import os
+import sys
+import shutil
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from tools.markdown_pdf_compiler import compile_markdown_to_pdf
+
+DOCS_DIR = r"D:\SafeDig_AG\Documentation"
+ROOT_DIR = r"D:\SafeDig_AG"
+MD_PATH = os.path.join(DOCS_DIR, "SafeDig_Technology_Stack_Specification.md")
+PDF_PATH = os.path.join(DOCS_DIR, "SafeDig_Technology_Stack_Specification.pdf")
+ROOT_PDF_PATH = os.path.join(ROOT_DIR, "SafeDig_Technology_Stack_Specification.pdf")
+
+os.makedirs(DOCS_DIR, exist_ok=True)
+
+MD_CONTENT = """# SafeDig AI — Technology Stack Specification
 **Classification**: Enterprise AI & Safety-Critical Engineering  
 **Standard**: UK Health and Safety Guidance 47 (HSG47) & CDM 2015  
 **Core Invariant**: Zero Escaped Hazards (`SAFE_MODE=True`)
@@ -86,3 +112,21 @@ Under SafeDig enterprise policy:
 - The LLM has **ADVISORY AUTHORITY ONLY**.
 - No safety gate, auto-clear decision, or hazard finding can be overridden by model inferences.
 - If the LLM produces a contradiction or becomes unresponsive, the system automatically defaults to deterministic safety rules with zero latency.
+"""
+
+def generate_tech_stack_documentation():
+    print(f"[1/2] Writing Markdown: {MD_PATH}")
+    with open(MD_PATH, 'w', encoding='utf-8') as f:
+        f.write(MD_CONTENT)
+        
+    print(f"[2/2] Compiling PDF: {PDF_PATH}")
+    compile_markdown_to_pdf(
+        MD_PATH,
+        PDF_PATH,
+        title="SafeDig AI — Technology Stack Specification",
+        subtitle="Production Architecture, Dependencies & Hardware Manifest"
+    )
+    print("[SUCCESS] Technology Stack Specification generated successfully!")
+
+if __name__ == "__main__":
+    generate_tech_stack_documentation()

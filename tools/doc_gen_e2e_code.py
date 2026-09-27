@@ -1,4 +1,30 @@
-# SafeDig AI — Complete End-to-End Execution & Code Working Mechanism
+"""
+SafeDig AI - Complete End-to-End Execution & Code Working Mechanism Generator
+Outputs:
+1. Documentation/SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.md
+2. Documentation/SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.pdf
+3. SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.pdf (Root mirror)
+"""
+
+import os
+import sys
+import shutil
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from tools.markdown_pdf_compiler import compile_markdown_to_pdf
+
+DOCS_DIR = r"D:\SafeDig_AG\Documentation"
+ROOT_DIR = r"D:\SafeDig_AG"
+MD_PATH = os.path.join(DOCS_DIR, "SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.md")
+PDF_PATH = os.path.join(DOCS_DIR, "SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.pdf")
+ROOT_PDF_PATH = os.path.join(ROOT_DIR, "SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.pdf")
+
+os.makedirs(DOCS_DIR, exist_ok=True)
+
+MD_CONTENT = """# SafeDig AI — Complete End-to-End Execution & Code Working Mechanism
 **UK Underground Utility Dig-Safety Map QA & Validation Platform**  
 **Compliance Standard**: UK Health and Safety Guidance 47 (HSG47) & CDM 2015  
 **Core Invariant**: Zero Escaped Hazards (`SAFE_MODE=True`)
@@ -260,3 +286,21 @@ SafeDig organizes pipeline execution as a stateful Directed Acyclic Graph (DAG) 
    - **HTML5 Canvas Viewer**: Hardware-accelerated smooth zoom and pan for high-resolution CAD sheets.
    - **Dynamic Gate Grid**: Interactive 17-gate status dashboard with green pass badges and red failure alerts.
    - **Human Sign-Off Modal**: Certified safety engineers can record risk acceptance or permit rejections with digital signatures stored permanently in `safedig.db`.
+"""
+
+def generate_e2e_code_documentation():
+    print(f"[1/2] Writing Markdown: {MD_PATH}")
+    with open(MD_PATH, 'w', encoding='utf-8') as f:
+        f.write(MD_CONTENT)
+        
+    print(f"[2/2] Compiling PDF: {PDF_PATH}")
+    compile_markdown_to_pdf(
+        MD_PATH,
+        PDF_PATH,
+        title="SafeDig AI — End-to-End Execution & Working Mechanism",
+        subtitle="Complete Engineering Specification & Code Working Mechanism"
+    )
+    print("[SUCCESS] End-to-End Code Working Mechanism generated successfully!")
+
+if __name__ == "__main__":
+    generate_e2e_code_documentation()

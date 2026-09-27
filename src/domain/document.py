@@ -38,3 +38,4 @@ class Document(BaseModel):
     is_corrupted: bool = False
     extracted_notice: Optional[str] = None
     is_missing_map_data: bool = False
+    map_page_num: int = 1

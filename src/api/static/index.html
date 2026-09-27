@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SafeDig — AI Map QA & Validation Console</title>
+  <title>SafeDig — AI Map QA &amp; Validation Console</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Lucide Icons -->
@@ -12,9 +12,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/static/styles.css?v=1.5.0">
+  <link rel="stylesheet" href="/static/styles.css?v=2.0.0">
 
-
+  <!-- Theme Init: Apply saved theme BEFORE paint to prevent flash of wrong theme -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('safedig-theme') || 'dark';
+        document.documentElement.setAttribute('data-theme', saved);
+      } catch(e) {}
+    })();
+  </script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans antialiased">
 
@@ -62,12 +70,23 @@
         </button>
       </nav>
 
-      <!-- System Health Badge -->
-      <div class="flex items-center space-x-3 text-xs text-slate-400 flex-shrink-0">
+      <!-- System Health Badge + Theme Toggle -->
+      <div class="flex items-center space-x-2 sm:space-x-3 text-xs text-slate-400 flex-shrink-0">
         <div class="flex items-center space-x-1.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span class="font-medium whitespace-nowrap">System Active</span>
+          <span class="font-medium whitespace-nowrap hidden sm:inline">System Active</span>
         </div>
+        <!-- Dark / Light Mode Toggle -->
+        <button id="theme-toggle-btn" onclick="toggleTheme()" title="Toggle Dark / Light Mode" aria-label="Toggle theme">
+          <!-- Sun icon (shown in dark mode) -->
+          <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          </svg>
+          <!-- Moon icon (shown in light mode) -->
+          <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3a7 7 0 0 0 9.79 9.79z"/>
+          </svg>
+        </button>
       </div>
     </div>
   </header>
@@ -604,51 +623,249 @@
     </section>
 
     <!-- ===================================================================== -->
+    <!-- ===================================================================== -->
     <!-- VIEW 4: WARNING CATALOGUE & LEGEND EXPLORER -->
     <!-- ===================================================================== -->
     <section id="view-catalogue" class="space-y-6 hidden">
-      <div>
-        <h2 class="text-xl font-bold text-white flex items-center gap-2">
-          <i data-lucide="book-open" class="w-5 h-5 text-blue-400"></i>
-          Authoritative Warning Catalogue & Legend Registry
-        </h2>
-        <p class="text-xs text-slate-400 mt-1">44 authoritative business warning definitions and 8 multi-utility provider symbology profiles.</p>
-      </div>
-
-      <!-- Providers Cards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">SGN</span>
-            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-[10px] font-bold rounded-full">Gas</span>
+      <!-- Header & Top Actions -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-800/60 p-5 rounded-2xl border border-slate-700/60 backdrop-blur-sm">
+        <div>
+          <div class="flex items-center gap-2.5">
+            <div class="w-9 h-9 rounded-xl bg-blue-500/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+              <i data-lucide="book-open" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <h2 class="text-lg sm:text-xl font-bold text-white tracking-tight flex items-center gap-2">
+                Authoritative Warning Catalogue & Legend Explorer
+              </h2>
+              <p class="text-xs text-slate-400 mt-0.5">Authoritative business warning rules from <span class="font-mono text-blue-300">warnings_list.xlsx</span> and multi-utility vector symbology profiles.</p>
+            </div>
           </div>
-          <p class="text-[11px] text-slate-400">3 Warning Features (HP / MP / LP Gas Mains)</p>
         </div>
-
-        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">UK Power Networks</span>
-            <span class="px-2 py-0.5 bg-amber-500/20 text-amber-300 text-[10px] font-bold rounded-full">Electricity</span>
-          </div>
-          <p class="text-[11px] text-slate-400">2 Warning Features (High Voltage & Low Voltage)</p>
-        </div>
-
-        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">Cadent Gas</span>
-            <span class="px-2 py-0.5 bg-blue-500/20 text-blue-300 text-[10px] font-bold rounded-full">Gas</span>
-          </div>
-          <p class="text-[11px] text-slate-400">2 Warning Features (High Pressure & Intermediate)</p>
-        </div>
-
-        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl space-y-2">
-          <div class="flex items-center justify-between">
-            <span class="text-xs font-bold text-white">Water Networks</span>
-            <span class="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 text-[10px] font-bold rounded-full">Water</span>
-          </div>
-          <p class="text-[11px] text-slate-400">Potable Trunk Mains & Sewer Foul/Surface</p>
+        <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Excel Synced
+          </span>
+          <button onclick="loadCatalogue(true)" class="px-3.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-medium flex items-center gap-2 border border-slate-600/80 transition-all shadow-sm">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span>Reload Excel</span>
+          </button>
         </div>
       </div>
+
+      <!-- KPI Summary Metrics Bar -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Total Utilities</span>
+            <div class="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+              <i data-lucide="building-2" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="cat-kpi-total-providers" class="text-2xl font-bold text-white tracking-tight font-mono">44</span>
+            <span class="text-[11px] text-slate-400">Providers</span>
+          </div>
+          <div class="mt-1 text-[10px] text-slate-400">UK Gas, Power, Water & Telecom</div>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">High Hazard Warnings</span>
+            <div class="w-7 h-7 rounded-lg bg-rose-500/10 text-rose-400 flex items-center justify-center">
+              <i data-lucide="alert-octagon" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="cat-kpi-high-warnings" class="text-2xl font-bold text-rose-400 tracking-tight font-mono">21</span>
+            <span class="text-[11px] text-rose-300/80 font-medium">Critical</span>
+          </div>
+          <div class="mt-1 text-[10px] text-rose-400/80">Blocks pipeline on AOI detection</div>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Medium & Routine</span>
+            <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+              <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="cat-kpi-medium-warnings" class="text-2xl font-bold text-amber-400 tracking-tight font-mono">21</span>
+            <span class="text-[11px] text-amber-300/80 font-medium">Advisory</span>
+          </div>
+          <div class="mt-1 text-[10px] text-slate-400">Non-blocking operational notes</div>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden group">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Auto-Clear Utilities</span>
+            <div class="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="cat-kpi-auto-clear" class="text-2xl font-bold text-emerald-400 tracking-tight font-mono">18</span>
+            <span class="text-[11px] text-emerald-300/80 font-medium">Clear</span>
+          </div>
+          <div class="mt-1 text-[10px] text-slate-400">0 warnings (Passes automatically)</div>
+        </div>
+
+        <div class="bg-slate-800/80 border border-slate-700/70 p-4 rounded-2xl relative overflow-hidden group col-span-2 sm:col-span-1">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-medium text-slate-400">Total Warning Rules</span>
+            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 text-indigo-400 flex items-center justify-center">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            </div>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span id="cat-kpi-total-warnings" class="text-2xl font-bold text-indigo-300 tracking-tight font-mono">43</span>
+            <span class="text-[11px] text-slate-400">Rules</span>
+          </div>
+          <div class="mt-1 text-[10px] text-slate-400">warnings_list.xlsx active set</div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Controls -->
+      <div class="bg-slate-800/60 p-4 rounded-2xl border border-slate-700/60 space-y-3.5">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          
+          <!-- Search Bar -->
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+            <input 
+              type="text" 
+              id="cat-search-input" 
+              oninput="onCatalogueSearchInput()" 
+              placeholder="Search utility, warning statement, or legend feature (e.g., SGN, 11kV, High Pressure, Thames Water)..." 
+              class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl pl-10 pr-10 py-2.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all shadow-inner"
+            >
+            <button onclick="clearCatalogueSearch()" id="cat-search-clear" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+
+          <!-- Severity Filter Dropdown & View Mode Switcher -->
+          <div class="flex items-center gap-2.5 flex-shrink-0">
+            <div class="relative">
+              <select 
+                id="cat-severity-filter" 
+                onchange="onCatalogueSeverityFilterChange()" 
+                class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-blue-500 font-medium cursor-pointer"
+              >
+                <option value="ALL">All Warning Statuses</option>
+                <option value="HIGH">🔴 High Hazard Only (Critical)</option>
+                <option value="MEDIUM">🟡 Medium Advisory</option>
+                <option value="LOW">🔵 Low Routine</option>
+                <option value="CLEAR">🟢 Auto-Clear (0 Warnings)</option>
+              </select>
+            </div>
+
+            <!-- View Toggle (Grid / Table) -->
+            <div class="flex items-center bg-slate-900 p-1 rounded-xl border border-slate-700">
+              <button 
+                onclick="setCatalogueViewMode('grid')" 
+                id="cat-btn-view-grid" 
+                class="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1.5"
+                title="Grid / Card View"
+              >
+                <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Cards</span>
+              </button>
+              <button 
+                onclick="setCatalogueViewMode('table')" 
+                id="cat-btn-view-table" 
+                class="px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5"
+                title="Detailed Matrix / Table View"
+              >
+                <i data-lucide="table" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Table</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Utility Type Filter Pills -->
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs pt-1 border-t border-slate-700/40">
+          <span class="text-[11px] font-semibold text-slate-400 mr-1 flex-shrink-0">Domain:</span>
+          <button onclick="setCatalogueTypeFilter('ALL')" id="cat-type-ALL" class="cat-type-pill active px-3 py-1 rounded-lg font-medium transition bg-blue-600 text-white flex-shrink-0">
+            All (<span id="cat-cnt-all">44</span>)
+          </button>
+          <button onclick="setCatalogueTypeFilter('Gas')" id="cat-type-Gas" class="cat-type-pill px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 flex-shrink-0 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-blue-400"></span> Gas (<span id="cat-cnt-gas">12</span>)
+          </button>
+          <button onclick="setCatalogueTypeFilter('Electricity')" id="cat-type-Electricity" class="cat-type-pill px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 flex-shrink-0 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Electricity (<span id="cat-cnt-elec">12</span>)
+          </button>
+          <button onclick="setCatalogueTypeFilter('Water')" id="cat-type-Water" class="cat-type-pill px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 flex-shrink-0 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-cyan-400"></span> Water (<span id="cat-cnt-water">4</span>)
+          </button>
+          <button onclick="setCatalogueTypeFilter('Telecom')" id="cat-type-Telecom" class="cat-type-pill px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 flex-shrink-0 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Telecom (<span id="cat-cnt-telecom">14</span>)
+          </button>
+          <button onclick="setCatalogueTypeFilter('Heat')" id="cat-type-Heat" class="cat-type-pill px-3 py-1 rounded-lg font-medium transition text-slate-400 hover:text-slate-200 hover:bg-slate-700/60 flex-shrink-0 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-rose-400"></span> Heat (<span id="cat-cnt-heat">2</span>)
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Filters & Result Count Bar -->
+      <div class="flex items-center justify-between text-xs text-slate-400 px-1">
+        <div class="flex items-center gap-2">
+          <span>Showing <strong id="cat-filtered-count" class="text-white font-mono">44</strong> of <strong class="text-white font-mono">44</strong> utility providers</span>
+          <span id="cat-active-filter-badge" class="hidden px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10px]">Filtered</span>
+        </div>
+        <div class="text-[11px] text-slate-500">
+          Authoritative Reference &bull; <span class="font-mono text-slate-400">warnings_list.xlsx &bull; master_legend_registry</span>
+        </div>
+      </div>
+
+      <!-- VIEW CONTAINER 1: CARDS GRID -->
+      <div id="cat-grid-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Rendered dynamically by app.js -->
+        <div class="col-span-full py-12 flex flex-col items-center justify-center text-slate-500 space-y-3">
+          <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <span class="text-xs">Loading Authoritative Catalogue & Legends...</span>
+        </div>
+      </div>
+
+      <!-- VIEW CONTAINER 2: DENSE TABLE -->
+      <div id="cat-table-container" class="hidden bg-slate-800/80 border border-slate-700/70 rounded-2xl overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-900/90 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-700/80">
+              <tr>
+                <th class="px-4 py-3 font-semibold">Utility Provider</th>
+                <th class="px-3 py-3 font-semibold">Domain</th>
+                <th class="px-4 py-3 font-semibold">Business Warning (warnings_list.xlsx)</th>
+                <th class="px-3 py-3 font-semibold">Status / Severity</th>
+                <th class="px-4 py-3 font-semibold">SafeDig QA Action</th>
+                <th class="px-4 py-3 font-semibold">Authoritative Map Symbology</th>
+                <th class="px-3 py-3 font-semibold text-right">Details</th>
+              </tr>
+            </thead>
+            <tbody id="cat-table-body" class="divide-y divide-slate-800/80 font-normal">
+              <!-- Rendered dynamically by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- No Results Fallback -->
+      <div id="cat-empty-state" class="hidden py-16 flex flex-col items-center justify-center text-center space-y-3 bg-slate-800/30 rounded-2xl border border-slate-800">
+        <div class="w-12 h-12 rounded-2xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-400">
+          <i data-lucide="search-x" class="w-6 h-6"></i>
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-sm font-semibold text-slate-200">No matching utilities or warnings found</h4>
+          <p class="text-xs text-slate-400 max-w-sm">Try adjusting your search query, clearing domain filters, or switching severity.</p>
+        </div>
+        <button onclick="resetCatalogueFilters()" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-semibold rounded-xl transition shadow-sm">
+          Reset All Filters
+        </button>
+      </div>
+
     </section>
 
   </main>
@@ -679,11 +896,49 @@
     </div>
   </div>
 
+  <!-- PROVIDER WARNINGS & LEGEND DEEP-DIVE MODAL -->
+  <div id="cat-provider-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-700/80 rounded-2xl max-w-3xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+      <!-- Modal Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center justify-between bg-slate-900/90">
+        <div class="flex items-center gap-3">
+          <div id="cat-modal-icon" class="w-10 h-10 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center font-bold text-base border border-blue-500/30">
+            G
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 id="cat-modal-title" class="text-base font-bold text-white tracking-tight">SGN</h3>
+              <span id="cat-modal-type-badge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">Gas</span>
+              <span id="cat-modal-status-badge" class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30">High Hazard Active</span>
+            </div>
+            <p id="cat-modal-subtitle" class="text-xs text-slate-400 mt-0.5">Authoritative Business Warning Rules &amp; Map Symbology Specification</p>
+          </div>
+        </div>
+        <button onclick="closeCatalogueModal()" class="p-2 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div id="cat-modal-body" class="p-5 overflow-y-auto space-y-6 text-xs text-slate-300 flex-1">
+        <!-- Rendered dynamically by app.js -->
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500 font-mono">Authoritative Source: <strong class="text-slate-400">Data/warnings_list.xlsx</strong></span>
+        <button onclick="closeCatalogueModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold border border-slate-700 transition shadow-sm">
+          Close Inspector
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- TOAST NOTIFICATION CONTAINER -->
   <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
 
   <!-- Main JavaScript Application -->
-  <script src="/static/app.js?v=3.0.0"></script>
+  <script src="/static/app.js?v=3.1.0"></script>
 
   <script>
     lucide.createIcons();

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from src.api.middleware import CorrelationIdMiddleware
-from src.api.routes import jobs, qa, evidence, batch, eval, health, metrics
+from src.api.routes import jobs, qa, evidence, batch, eval, health, metrics, catalogue
 from src.config.settings import settings
 from src.config.logging import logger
 
@@ -57,6 +57,7 @@ def create_app() -> FastAPI:
     app.include_router(evidence.router, prefix="/api/v1")
     app.include_router(batch.router, prefix="/api/v1")
     app.include_router(eval.router, prefix="/api/v1")
+    app.include_router(catalogue.router, prefix="/api/v1")
 
     
     @app.get("/api/v1/health", tags=["Health"])

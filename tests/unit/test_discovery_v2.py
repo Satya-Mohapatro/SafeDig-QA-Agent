@@ -60,3 +60,26 @@ def test_open_world_asset_discovery_and_classification_confidence():
     # Verify no false positive High Pressure Gas Main inside the AOI
     hp_in_aoi = [a for a in assets if "high pressure" in a.normalized_class.lower() and a.inside_aoi]
     assert len(hp_in_aoi) == 0
+
+
+def test_nget_letter_no_false_assets():
+    """Verify National Grid Electricity letters/notices produce 0 false assets."""
+    pdf_path = "Data/535179_175614/National Grid Electricity_42463390.pdf"
+    if not os.path.exists(pdf_path):
+        pytest.skip("Test PDF not found")
+
+    doc = inspect_pdf(pdf_path, "DOC-TEST-NGET", "JOB-TEST", "1", "hash")
+    # Verify map page correctly auto-detected as page 3
+    assert doc.map_page_num == 3
+    assert doc.is_missing_map_data is True  # "No Assets Affected" notice
+
+    aoi = get_document_aoi(pdf_path, "DOC-TEST-NGET", doc.map_page_num)
+    assert aoi.page_num == 3
+    assert "vector" in str(aoi.source).lower()
+
+    legend = resolve_legend("National Grid Electricity Transmission", pdf_path=pdf_path, page_num=doc.map_page_num)
+    wdefs = master_warning_catalogue.get_definitions_for_provider("National Grid Electricity Transmission")
+
+    assets, completeness = discover_open_world_assets(pdf_path, doc, aoi, legend, wdefs)
+    # Zero false assets (no 11kV cables or unknown assets from letterhead)
+    assert len(assets) == 0

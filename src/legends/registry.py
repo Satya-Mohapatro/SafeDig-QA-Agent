@@ -205,7 +205,7 @@ class LegendRegistry:
                     warning_code="WATER_TRUNK_MAIN",
                     description="Water Trunk Transmission Main",
                     geometry_type=GeometryType.LINE,
-                    color=ColorSignature(rgb=(255, 0, 0), tolerance=40),  # Red solid line
+                    color=ColorSignature(rgb=(0, 68, 140), tolerance=35),  # Dark navy blue — thick trunk main line
                     stroke=StrokeStyle(min_width_pt=1.0, max_width_pt=6.0),
                     text_labels=["TRUNK", "TRUNK MAIN"]
                 ),

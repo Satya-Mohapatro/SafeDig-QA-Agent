@@ -83,14 +83,14 @@ def extract_features_from_ocr(
 
         # Ground truth colors per utility asset standards:
         # SGN: LP = Red (255,0,0), MP = Cyan (0,197,255), IP = Green (85,255,0), HP = Orange (255,170,0)
-        # Water: Trunk = Red (255,0,0), Potable Distribution = Cyan (0,180,255)
+        # Water: Trunk = Dark Navy Blue (0,68,140), Potable Distribution = Cyan (0,180,255)
         # Electric: HV = Red (255,0,0), LV = Blue (0,0,255)
         candidate_labels = [
             ("water main", (0, 180, 255), "LINE"),
-            ("trunk main", (255, 20, 20), "LINE"),
+            ("trunk main", (0, 68, 140), "LINE"),           # Dark navy blue — NOT red (red is the AOI boundary)
             ("private water", (0, 180, 255), "LINE"),
             ("proposed water", (0, 180, 255), "LINE"),
-            ("proposed trunk main", (255, 35, 35), "LINE"),
+            ("proposed trunk main", (0, 68, 140), "LINE"),  # Dark navy blue
             ("abandoned asset", (255, 195, 68), "LINE"),
             ("meter", (0, 180, 255), "POINT"),
             ("valve", (0, 180, 255), "POINT"),
@@ -316,7 +316,7 @@ def detect_dynamic_legend(
                     warning_code="TRUNK_MAIN",
                     description="Trunk Main",
                     geometry_type=GeometryType.LINE,
-                    color=ColorSignature(rgb=(255, 20, 20), tolerance=40),
+                    color=ColorSignature(rgb=(0, 68, 140), tolerance=35),  # Dark navy blue — not red
                     stroke=StrokeStyle(min_width_pt=1.0, max_width_pt=6.0),
                     text_labels=["TRUNK", "MAIN"]
                 )

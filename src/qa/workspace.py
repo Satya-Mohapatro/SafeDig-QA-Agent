@@ -44,14 +44,15 @@ class WorkspacePayloadBuilder:
         # 2. Legend & AOI
         evidence_dir = os.path.join(out_dir, "evidence")
         os.makedirs(evidence_dir, exist_ok=True)
+        map_page = getattr(doc_obj, "map_page_num", 1) or 1
         legend = resolve_legend(
             record.utility_name,
             pdf_path=pdf_path,
-            page_num=1,
+            page_num=map_page,
             output_crop_dir=evidence_dir,
             document_id=doc_id
         )
-        aoi = get_document_aoi(pdf_path, doc_id, page_num=1)
+        aoi = get_document_aoi(pdf_path, doc_id, page_num=map_page)
         wdefs = master_warning_catalogue.get_definitions_for_provider(record.utility_name)
         
         # 3. Detections & Open-World Discovery

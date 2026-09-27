@@ -639,6 +639,27 @@ def detect_aoi_from_pdf(pdf_path: str, document_id: str, page_num: int = 1) -> A
     """
     try:
         doc = pymupdf.open(pdf_path)
+        if page_num is None or (page_num == 1 and len(doc) > 1):
+            # Check if page 1 actually has an explicit vector boundary
+            p1_scored = _score_vector_drawings(doc[0].get_drawings(), doc[0].rotation, doc[0].mediabox, doc[0].rect)
+            if not p1_scored or p1_scored[0][0] < 120:
+                best_p = 1
+                best_s = -1
+                for idx, p in enumerate(doc):
+                    s = _score_vector_drawings(p.get_drawings(), p.rotation, p.mediabox, p.rect)
+                    if s and s[0][0] >= 120 and s[0][0] > best_s:
+                        best_s = s[0][0]
+                        best_p = idx + 1
+                if best_s >= 120:
+                    page_num = best_p
+                    logger.info(f"Auto-selected map page {page_num} for {document_id} (boundary score={best_s})")
+                else:
+                    for idx, p in enumerate(doc):
+                        if _find_vector_map_frame(p):
+                            page_num = idx + 1
+                            logger.info(f"Auto-selected map page {page_num} for {document_id} via vector map frame")
+                            break
+
         if page_num < 1 or page_num > len(doc):
             raise IndexError("Page number out of bounds")
 

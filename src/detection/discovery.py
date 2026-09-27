@@ -136,6 +136,42 @@ def _render_region(pdf_path, page_num, region_bbox, dpi=200):
         logger.debug(f"Raster render error: {e}")
         return None
 
+def _blank_aoi_border(mask: np.ndarray, clip_bbox, zoom, aoi, border_px: int = 18):
+    """Zero-out a band around the AOI site boundary in the raster mask.
+
+    Thames Water (and others) draw a solid coloured rectangle around the AOI
+    site — this band is NOT a utility line.  We blank a strip of `border_px`
+    pixels around the inner edge of that rectangle so it cannot trigger false
+    detections.
+    """
+    if not aoi.bbox:
+        return mask
+    ax0, ay0, ax1, ay1 = aoi.bbox
+    # Convert AOI corners to pixel coords within the clip region
+    px0 = int((ax0 - clip_bbox[0]) * zoom)
+    py0 = int((ay0 - clip_bbox[1]) * zoom)
+    px1 = int((ax1 - clip_bbox[0]) * zoom)
+    py1 = int((ay1 - clip_bbox[1]) * zoom)
+    h, w = mask.shape[:2]
+    # Clamp to image bounds
+    px0 = max(0, px0); py0 = max(0, py0)
+    px1 = min(w, px1); py1 = min(h, py1)
+    bp = border_px
+    # Top strip
+    if py0 < h and py0 + bp < h:
+        mask[py0:py0 + bp, px0:px1] = 0
+    # Bottom strip
+    if py1 > 0 and py1 - bp >= 0:
+        mask[max(0, py1 - bp):py1, px0:px1] = 0
+    # Left strip
+    if px0 < w and px0 + bp < w:
+        mask[py0:py1, px0:px0 + bp] = 0
+    # Right strip
+    if px1 > 0 and px1 - bp >= 0:
+        mask[py0:py1, max(0, px1 - bp):px1] = 0
+    return mask
+
+
 def _detect_colored_lines(bgr, feat, clip_bbox, zoom, aoi, min_area=60, min_len=40):
     """Detect contours of a specific colour and return intersecting candidates."""
     frgb = feat.color.rgb
@@ -144,12 +180,24 @@ def _detect_colored_lines(bgr, feat, clip_bbox, zoom, aoi, min_area=60, min_len=
     k = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
     mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, k, iterations=2)
     mask = cv2.morphologyEx(mask, cv2.MORPH_DILATE, k, iterations=1)
+
+    # ── Blank the AOI site boundary border so it never triggers detection ──
+    # Maps draw a coloured rectangle around the site; this is NOT a utility.
+    mask = _blank_aoi_border(mask, clip_bbox, zoom, aoi, border_px=22)
+
     cnts, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    img_h, img_w = bgr.shape[:2]
     results = []
     for cnt in cnts:
         if cv2.contourArea(cnt) < min_area and cv2.arcLength(cnt, False) < min_len:
             continue
         cx_px, cy_px, cw_px, ch_px = cv2.boundingRect(cnt)
+
+        # Skip contours that span almost the full render region — these are
+        # the site boundary rectangle itself or a page-wide element.
+        if cw_px > 0.75 * img_w and ch_px > 0.75 * img_h:
+            continue
+
         rx0 = clip_bbox[0] + cx_px / zoom
         ry0 = clip_bbox[1] + cy_px / zoom
         rx1 = clip_bbox[0] + (cx_px + cw_px) / zoom
@@ -190,9 +238,19 @@ def discover_open_world_assets(
             aoi_coverage=0.0, legend_confidence=0.5, overall=0.25, status="INSUFFICIENT"
         )
 
+    # ── Guard: Missing map data / No assets confirmed by official notice ─────
+    if getattr(document, "is_missing_map_data", False):
+        logger.info(
+            f"Discovery skipped for {document.document_id}: "
+            f"document has no map data or is an enquiry notice only (is_missing_map_data=True)."
+        )
+        return [], ScanCompleteness(
+            aoi_coverage=1.0, legend_confidence=1.0, overall=1.0, status="CLEAR"
+        )
+
     features = legend_profile.features if legend_profile else []
     legend_crop = getattr(legend_profile, "legend_crop_path", None) if legend_profile else None
-    page_num = aoi.page_num or 1
+    page_num = aoi.page_num or getattr(document, "map_page_num", 1) or 1
     raw_drawings = extract_page_vector_paths(pdf_path, page_num)
 
     nearby_text: List[str] = []
@@ -204,11 +262,13 @@ def discover_open_world_assets(
     ax0, ay0, ax1, ay1 = aoi.bbox
     search_box = [ax0 - 40.0, ay0 - 40.0, ax1 + 40.0, ay1 + 40.0]
 
+    page_text_len = 0
     try:
         import fitz as _fitz
         _d = _fitz.open(pdf_path)
         _p = _d[page_num - 1]
         page_w, page_h = _p.rect.width, _p.rect.height
+        page_text_len = len(_p.get_text().strip())
         _d.close()
     except Exception:
         page_w, page_h = 842.0, 595.0
@@ -270,9 +330,25 @@ def discover_open_world_assets(
         })
 
     # ── PASS D2: RASTER CV DISCOVERY — runs for raster/hybrid plans (< 50 vector drawings) ──
-    run_raster_cv = (len(raw_drawings) < 50) or bool(
+    has_map_frame = False
+    try:
+        from src.aoi.detector import _find_vector_map_frame
+        _d_tmp = _fitz.open(pdf_path)
+        has_map_frame = bool(_find_vector_map_frame(_d_tmp[page_num - 1]))
+        _d_tmp.close()
+    except Exception:
+        pass
+
+    is_text_letter = is_fallback and (not has_map_frame) and (len(raw_drawings) < 30) and (page_text_len > 250)
+    if is_text_letter:
+        logger.info(
+            f"Skipping raster CV for {document.document_id} on page {page_num}: "
+            f"FALLBACK AOI + text-heavy doc ({page_text_len} chars, {len(raw_drawings)} dwgs, no map frame) indicates letter/notice."
+        )
+
+    run_raster_cv = (not is_text_letter) and ((len(raw_drawings) < 50) or bool(
         document.modality and any(m in str(document.modality).upper() for m in ["RASTER", "IMAGE", "SCANNED"])
-    )
+    ))
     if features and run_raster_cv:
         dpi = 200
         zoom = dpi / 72.0
@@ -285,6 +361,13 @@ def discover_open_world_assets(
                 if _is_neutral(frgb[0], frgb[1], frgb[2]) and max(frgb) < 200:
                     continue
                 if frgb[0] > 240 and frgb[1] > 240 and frgb[2] > 240:
+                    continue
+                # ── Skip raster CV for trunk mains ───────────────────────────
+                # Trunk main colors (dark navy) overlap heavily with OS basemap
+                # rivers/buildings.  Trunk mains are physically large pipes that
+                # appear as authoritative vector paths when actually present;
+                # raster-only detection produces too many false positives.
+                if any(k in feat.feature_id.upper() for k in ["TRUNK", "TRUNK_MAIN"]):
                     continue
                 raster_cands = _detect_colored_lines(bgr, feat, render_region, zoom, aoi)
                 candidates.extend(raster_cands)

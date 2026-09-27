@@ -2,6 +2,39 @@
 // SafeDig QA Console — Application Logic
 // ============================================================
 
+// ─── Theme System ─────────────────────────────────────────────────────────────
+/**
+ * Toggle between dark and light theme.
+ * Persists choice to localStorage so it survives page reloads.
+ */
+function toggleTheme() {
+  const html = document.documentElement;
+  const current = html.getAttribute('data-theme') || 'dark';
+  const next = current === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  try { localStorage.setItem('safedig-theme', next); } catch(e) {}
+  // Update body bg class for Tailwind base colours
+  if (next === 'light') {
+    document.body.classList.remove('bg-slate-900', 'text-slate-100');
+    document.body.classList.add('bg-slate-100', 'text-slate-900');
+  } else {
+    document.body.classList.remove('bg-slate-100', 'text-slate-900');
+    document.body.classList.add('bg-slate-900', 'text-slate-100');
+  }
+}
+
+// Apply correct body classes on initial load (CSS handles most of it,
+// but Tailwind's purge can affect inline body classes)
+(function applyInitialBodyTheme() {
+  try {
+    var saved = localStorage.getItem('safedig-theme') || 'dark';
+    if (saved === 'light') {
+      document.body.classList.remove('bg-slate-900', 'text-slate-100');
+      document.body.classList.add('bg-slate-100', 'text-slate-900');
+    }
+  } catch(e) {}
+})();
+
 let currentJobId = null;
 let currentDocumentId = null;
 let currentWorkspacePayload = null;
@@ -243,6 +276,8 @@ function switchTab(tabId) {
     if (currentJobId && allMapsForJob.length === 0) {
       fetchAndRenderMaps(currentJobId);
     }
+  } else if (tabId === 'catalogue') {
+    loadCatalogue();
   }
 }
 
@@ -1010,6 +1045,713 @@ async function applyDisposition(action) {
   }
 }
 
+// ─── Warning Catalogue & Legend Explorer ────────────────────────────────────
+
+let catalogueData = null;
+let currentCatTypeFilter = 'ALL';
+let currentCatSevFilter = 'ALL';
+let currentCatSearch = '';
+let currentCatViewMode = 'grid'; // 'grid' or 'table'
+
+const DOMAIN_THEMES = {
+  Gas: {
+    icon: 'flame',
+    badgeClass: 'bg-blue-500/15 text-blue-300 border-blue-500/30',
+    dotClass: 'bg-blue-400',
+    iconBg: 'bg-blue-500/20 text-blue-400'
+  },
+  Electricity: {
+    icon: 'zap',
+    badgeClass: 'bg-amber-500/15 text-amber-300 border-amber-500/30',
+    dotClass: 'bg-amber-400',
+    iconBg: 'bg-amber-500/20 text-amber-400'
+  },
+  Water: {
+    icon: 'droplet',
+    badgeClass: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30',
+    dotClass: 'bg-cyan-400',
+    iconBg: 'bg-cyan-500/20 text-cyan-400'
+  },
+  Telecom: {
+    icon: 'radio',
+    badgeClass: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
+    dotClass: 'bg-emerald-400',
+    iconBg: 'bg-emerald-500/20 text-emerald-400'
+  },
+  Heat: {
+    icon: 'thermometer',
+    badgeClass: 'bg-rose-500/15 text-rose-300 border-rose-500/30',
+    dotClass: 'bg-rose-400',
+    iconBg: 'bg-rose-500/20 text-rose-400'
+  },
+  General: {
+    icon: 'layers',
+    badgeClass: 'bg-slate-500/15 text-slate-300 border-slate-500/30',
+    dotClass: 'bg-slate-400',
+    iconBg: 'bg-slate-500/20 text-slate-400'
+  }
+};
+
+async function loadCatalogue(forceReload = false) {
+  const gridEl = document.getElementById('cat-grid-container');
+  if (gridEl && !catalogueData) {
+    gridEl.innerHTML = `
+      <div class="col-span-full py-16 flex flex-col items-center justify-center text-slate-500 space-y-3">
+        <div class="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-xs font-medium text-slate-400">Loading Authoritative Catalogue &amp; Legend Symbology from Excel...</span>
+      </div>
+    `;
+  }
+
+  try {
+    const url = `/api/v1/catalogue${forceReload ? '?reload=true' : ''}`;
+    const resp = await fetch(url);
+    if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+    const data = await resp.json();
+    catalogueData = data;
+
+    // Update KPI Counters
+    if (data.stats) {
+      const s = data.stats;
+      const elTot = document.getElementById('cat-kpi-total-providers');
+      if (elTot) elTot.innerText = s.total_providers || 44;
+      const elHigh = document.getElementById('cat-kpi-high-warnings');
+      if (elHigh) elHigh.innerText = s.high_hazard_warnings || 21;
+      const elMed = document.getElementById('cat-kpi-medium-warnings');
+      if (elMed) elMed.innerText = (s.medium_warnings || 0) + (s.low_warnings || 0);
+      const elClear = document.getElementById('cat-kpi-auto-clear');
+      if (elClear) elClear.innerText = s.auto_clear_providers || 18;
+      const elTotWarn = document.getElementById('cat-kpi-total-warnings');
+      if (elTotWarn) elTotWarn.innerText = s.total_warnings || 43;
+
+      // Update Domain Pill Counters
+      const tc = s.type_counts || {};
+      const elCntAll = document.getElementById('cat-cnt-all');
+      if (elCntAll) elCntAll.innerText = s.total_providers || 44;
+      const elCntGas = document.getElementById('cat-cnt-gas');
+      if (elCntGas) elCntGas.innerText = tc['Gas'] || 12;
+      const elCntElec = document.getElementById('cat-cnt-elec');
+      if (elCntElec) elCntElec.innerText = tc['Electricity'] || 12;
+      const elCntWater = document.getElementById('cat-cnt-water');
+      if (elCntWater) elCntWater.innerText = tc['Water'] || 4;
+      const elCntTel = document.getElementById('cat-cnt-telecom');
+      if (elCntTel) elCntTel.innerText = tc['Telecom'] || 14;
+      const elCntHeat = document.getElementById('cat-cnt-heat');
+      if (elCntHeat) elCntHeat.innerText = tc['Heat'] || 2;
+    }
+
+    if (forceReload) {
+      showToast('Warning catalogue and legends reloaded from warnings_list.xlsx', 'success');
+    }
+
+    renderCatalogue();
+  } catch (err) {
+    if (gridEl) {
+      gridEl.innerHTML = `
+        <div class="col-span-full py-12 flex flex-col items-center justify-center text-rose-400 space-y-2">
+          <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+          <span class="text-sm font-semibold">Failed to load warning catalogue: ${err.message}</span>
+          <button onclick="loadCatalogue(true)" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs border border-slate-700 mt-2">
+            Retry Loading
+          </button>
+        </div>
+      `;
+      if (window.lucide) lucide.createIcons();
+    }
+    showToast(`Failed to load catalogue: ${err.message}`, 'error');
+  }
+}
+
+function getFilteredCatalogueProviders() {
+  if (!catalogueData || !catalogueData.providers) return [];
+  let providers = catalogueData.providers;
+
+  // Domain Filter
+  if (currentCatTypeFilter && currentCatTypeFilter !== 'ALL') {
+    providers = providers.filter(p => (p.utility_type || '').toLowerCase() === currentCatTypeFilter.toLowerCase());
+  }
+
+  // Severity Filter
+  if (currentCatSevFilter && currentCatSevFilter !== 'ALL') {
+    if (currentCatSevFilter === 'HIGH') {
+      providers = providers.filter(p => (p.high_count || 0) > 0);
+    } else if (currentCatSevFilter === 'MEDIUM') {
+      providers = providers.filter(p => (p.medium_count || 0) > 0);
+    } else if (currentCatSevFilter === 'LOW') {
+      providers = providers.filter(p => (p.low_count || 0) > 0);
+    } else if (currentCatSevFilter === 'CLEAR') {
+      providers = providers.filter(p => (p.warnings_count || 0) === 0);
+    }
+  }
+
+  // Search Filter
+  if (currentCatSearch && currentCatSearch.trim()) {
+    const q = currentCatSearch.toLowerCase().trim();
+    providers = providers.filter(p => {
+      if ((p.utility_name || '').toLowerCase().includes(q)) return true;
+      if ((p.utility_type || '').toLowerCase().includes(q)) return true;
+      const warnMatch = (p.warnings || []).some(w => (w.warning_text || '').toLowerCase().includes(q));
+      if (warnMatch) return true;
+      if (p.legend && p.legend.features) {
+        return p.legend.features.some(f => 
+          (f.description || '').toLowerCase().includes(q) ||
+          (f.text_labels || []).some(l => l.toLowerCase().includes(q)) ||
+          (f.warning_code || '').toLowerCase().includes(q)
+        );
+      }
+      return false;
+    });
+  }
+
+  return providers;
+}
+
+function renderCatalogue() {
+  const providers = getFilteredCatalogueProviders();
+  const total = catalogueData ? catalogueData.providers.length : 0;
+  
+  const cntEl = document.getElementById('cat-filtered-count');
+  if (cntEl) cntEl.innerText = providers.length;
+
+  const badgeEl = document.getElementById('cat-active-filter-badge');
+  const isFiltered = currentCatTypeFilter !== 'ALL' || currentCatSevFilter !== 'ALL' || !!currentCatSearch;
+  if (badgeEl) {
+    if (isFiltered) badgeEl.classList.remove('hidden');
+    else badgeEl.classList.add('hidden');
+  }
+
+  const emptyEl = document.getElementById('cat-empty-state');
+  const gridEl = document.getElementById('cat-grid-container');
+  const tableEl = document.getElementById('cat-table-container');
+
+  if (providers.length === 0) {
+    if (emptyEl) emptyEl.classList.remove('hidden');
+    if (gridEl) gridEl.classList.add('hidden');
+    if (tableEl) tableEl.classList.add('hidden');
+    if (window.lucide) lucide.createIcons();
+    return;
+  }
+
+  if (emptyEl) emptyEl.classList.add('hidden');
+
+  if (currentCatViewMode === 'grid') {
+    if (tableEl) tableEl.classList.add('hidden');
+    if (gridEl) {
+      gridEl.classList.remove('hidden');
+      renderCatalogueGrid(providers);
+    }
+  } else {
+    if (gridEl) gridEl.classList.add('hidden');
+    if (tableEl) {
+      tableEl.classList.remove('hidden');
+      renderCatalogueTable(providers);
+    }
+  }
+
+  if (window.lucide) lucide.createIcons();
+}
+
+function renderCatalogueGrid(providers) {
+  const gridEl = document.getElementById('cat-grid-container');
+  if (!gridEl) return;
+
+  gridEl.innerHTML = providers.map(p => {
+    const theme = DOMAIN_THEMES[p.utility_type] || DOMAIN_THEMES.General;
+    
+    // Severity status badge
+    let sevBadgeHtml = '';
+    if ((p.high_count || 0) > 0) {
+      sevBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/15 text-rose-300 border border-rose-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span> ${p.high_count} High Hazard</span>`;
+    } else if ((p.warnings_count || 0) > 0) {
+      sevBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/15 text-amber-300 border border-amber-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> ${p.warnings_count} Advisory</span>`;
+    } else {
+      sevBadgeHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Auto-Clear</span>`;
+    }
+
+    // Warnings list HTML
+    let warningsHtml = '';
+    if (!p.warnings || p.warnings.length === 0) {
+      warningsHtml = `
+        <div class="p-3 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-emerald-300/90 text-xs flex items-center gap-2.5">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 flex-shrink-0"></i>
+          <span class="leading-relaxed"><strong>Verified Clear On Receipt</strong> — No high-hazard warnings registered in Excel. Maps pass automatically.</span>
+        </div>
+      `;
+    } else {
+      const shownWarns = p.warnings.slice(0, 3);
+      warningsHtml = `
+        <div class="space-y-1.5">
+          ${shownWarns.map(w => {
+            const isHigh = w.severity === 'HIGH';
+            const isMed = w.severity === 'MEDIUM';
+            const badgeClass = isHigh ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : (isMed ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30');
+            const label = isHigh ? 'HIGH' : (isMed ? 'MED' : 'LOW');
+            const policyTag = isHigh ? 'Blocks in AOI' : 'Advisory Note';
+            return `
+              <div class="p-2 rounded-lg bg-slate-900/80 border border-slate-800 flex items-start justify-between gap-2 text-xs">
+                <div class="space-y-0.5 min-w-0">
+                  <div class="text-slate-200 font-medium leading-snug truncate" title="${w.warning_text}">${w.warning_text}</div>
+                  <div class="text-[10px] text-slate-400 font-mono">${policyTag}</div>
+                </div>
+                <span class="px-1.5 py-0.5 rounded text-[9px] font-bold flex-shrink-0 ${badgeClass}">${label}</span>
+              </div>
+            `;
+          }).join('')}
+          ${p.warnings.length > 3 ? `<div class="text-[10px] text-slate-400 text-right pr-1 font-mono">+ ${p.warnings.length - 3} more warning rule(s)</div>` : ''}
+        </div>
+      `;
+    }
+
+    // Legend Symbology HTML
+    let legendHtml = '';
+    const leg = p.legend;
+    if (leg && leg.features && leg.features.length > 0) {
+      const shownFeats = leg.features.slice(0, 3);
+      legendHtml = `
+        <div class="pt-2 border-t border-slate-800/80 space-y-1.5">
+          <div class="flex items-center justify-between text-[10px] text-slate-400 font-mono">
+            <span>Authoritative Symbology</span>
+            <span class="text-slate-400 font-semibold truncate max-w-[120px]">${leg.legend_id || 'Standard'}</span>
+          </div>
+          <div class="space-y-1">
+            ${shownFeats.map(f => {
+              const dashStyle = f.is_dashed 
+                ? `background: repeating-linear-gradient(to right, ${f.color_hex}, ${f.color_hex} 4px, transparent 4px, transparent 8px); height: 2px;` 
+                : `background-color: ${f.color_hex}; height: 2.5px;`;
+              const labelChips = (f.text_labels || []).slice(0, 2).map(l => `<span class="px-1 py-0.2 bg-slate-800 text-slate-400 rounded text-[9px] font-mono border border-slate-700/60">${l}</span>`).join('');
+              return `
+                <div class="flex items-center justify-between gap-2 py-1 px-1.5 rounded-md bg-slate-900/40 hover:bg-slate-900/80 transition text-xs">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span class="w-6 rounded-full flex-shrink-0" style="${dashStyle}"></span>
+                    <span class="text-slate-300 text-[11px] truncate" title="${f.description}">${f.description}</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 flex-shrink-0">
+                    ${labelChips}
+                    <span class="text-[10px] font-mono text-slate-400">${f.color_hex}</span>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+            ${leg.features.length > 3 ? `<div class="text-[10px] text-slate-400 text-right pr-1 font-mono">+ ${leg.features.length - 3} more feature(s)</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    const safeName = (p.utility_name || '').replace(/'/g, "\\'");
+
+    return `
+      <div class="bg-slate-800/80 border border-slate-700/70 hover:border-slate-600/90 transition-all rounded-2xl p-4 flex flex-col justify-between space-y-3.5 shadow-lg group">
+        <!-- Card Top Bar -->
+        <div class="space-y-2">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl ${theme.iconBg} flex items-center justify-center flex-shrink-0 border border-slate-700/50">
+                <i data-lucide="${theme.icon}" class="w-4 h-4"></i>
+              </div>
+              <div class="min-w-0">
+                <h3 class="font-bold text-white text-sm truncate tracking-tight" title="${p.utility_name}">${p.utility_name}</h3>
+                <div class="flex items-center gap-1.5 mt-0.5">
+                  <span class="px-2 py-0.2 rounded-full text-[9px] font-bold border ${theme.badgeClass}">${p.utility_type}</span>
+                </div>
+              </div>
+            </div>
+            <div class="flex-shrink-0">
+              ${sevBadgeHtml}
+            </div>
+          </div>
+
+          <!-- Warnings Section -->
+          ${warningsHtml}
+        </div>
+
+        <!-- Symbology & Card Action -->
+        <div class="space-y-3 pt-1">
+          ${legendHtml}
+          <button 
+            onclick="showCatalogueProviderModal('${safeName}')" 
+            class="w-full py-2 bg-slate-900/90 hover:bg-slate-700 text-slate-300 hover:text-white rounded-xl text-xs font-semibold border border-slate-700/80 hover:border-slate-600 transition flex items-center justify-center gap-1.5 group-hover:border-blue-500/40"
+          >
+            <i data-lucide="eye" class="w-3.5 h-3.5 text-blue-400"></i>
+            <span>Inspect Rules &amp; Symbology</span>
+          </button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderCatalogueTable(providers) {
+  const tbody = document.getElementById('cat-table-body');
+  if (!tbody) return;
+
+  const rows = [];
+  providers.forEach(p => {
+    const theme = DOMAIN_THEMES[p.utility_type] || DOMAIN_THEMES.General;
+    const safeName = (p.utility_name || '').replace(/'/g, "\\'");
+    const warnings = p.warnings && p.warnings.length > 0 ? p.warnings : [null];
+
+    warnings.forEach((w, idx) => {
+      const isFirst = idx === 0;
+      const rowSpan = warnings.length;
+
+      let warnTextHtml = '';
+      let sevHtml = '';
+      let policyHtml = '';
+
+      if (w) {
+        const isHigh = w.severity === 'HIGH';
+        const isMed = w.severity === 'MEDIUM';
+        const badgeClass = isHigh ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : (isMed ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-sky-500/20 text-sky-300 border border-sky-500/30');
+        warnTextHtml = `<span class="text-slate-200 font-medium">${w.warning_text}</span>`;
+        sevHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">${w.raw_status || w.severity}</span>`;
+        policyHtml = isHigh 
+          ? `<span class="text-rose-400 font-semibold flex items-center gap-1"><i data-lucide="alert-octagon" class="w-3 h-3"></i> Blocks on Detection</span>`
+          : `<span class="text-slate-400 flex items-center gap-1"><i data-lucide="info" class="w-3 h-3"></i> Advisory (Non-Blocking)</span>`;
+      } else {
+        warnTextHtml = `<span class="text-emerald-400/90 font-medium flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5"></i> Clear Plan — No Warnings in Excel</span>`;
+        sevHtml = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">CLEAR</span>`;
+        policyHtml = `<span class="text-emerald-400 font-semibold flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i> Auto-Pass on Receipt</span>`;
+      }
+
+      // Legend symbology preview for the table
+      let symbHtml = '';
+      if (p.legend && p.legend.features && p.legend.features.length > 0) {
+        const feat = p.legend.features[idx % p.legend.features.length];
+        const dashStyle = feat.is_dashed 
+          ? `background: repeating-linear-gradient(to right, ${feat.color_hex}, ${feat.color_hex} 3px, transparent 3px, transparent 6px); height: 2px;` 
+          : `background-color: ${feat.color_hex}; height: 2.5px;`;
+        symbHtml = `
+          <div class="flex items-center gap-2">
+            <span class="w-5 rounded-full flex-shrink-0" style="${dashStyle}"></span>
+            <span class="text-slate-300 text-[11px] truncate max-w-[160px]" title="${feat.description}">${feat.description}</span>
+            <span class="text-[10px] font-mono text-slate-400">${feat.color_hex}</span>
+          </div>
+        `;
+      } else {
+        symbHtml = `<span class="text-slate-400 font-mono text-[11px]">—</span>`;
+      }
+
+      rows.push(`
+        <tr class="hover:bg-slate-800/40 transition">
+          ${isFirst ? `
+            <td rowspan="${rowSpan}" class="px-4 py-3 align-top font-bold text-white border-r border-slate-800/60 bg-slate-900/30">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full ${theme.dotClass}"></span>
+                <span class="tracking-tight text-xs">${p.utility_name}</span>
+              </div>
+            </td>
+            <td rowspan="${rowSpan}" class="px-3 py-3 align-top border-r border-slate-800/60 bg-slate-900/30">
+              <span class="px-2 py-0.5 rounded-full text-[9px] font-bold border ${theme.badgeClass}">${p.utility_type}</span>
+            </td>
+          ` : ''}
+          <td class="px-4 py-3 leading-relaxed max-w-xs">${warnTextHtml}</td>
+          <td class="px-3 py-3 whitespace-nowrap">${sevHtml}</td>
+          <td class="px-4 py-3 whitespace-nowrap">${policyHtml}</td>
+          <td class="px-4 py-3 whitespace-nowrap">${symbHtml}</td>
+          ${isFirst ? `
+            <td rowspan="${rowSpan}" class="px-3 py-3 align-middle text-right bg-slate-900/20">
+              <button 
+                onclick="showCatalogueProviderModal('${safeName}')" 
+                class="p-1.5 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg transition" 
+                title="Inspect Provider Specs"
+              >
+                <i data-lucide="eye" class="w-4 h-4 text-blue-400"></i>
+              </button>
+            </td>
+          ` : ''}
+        </tr>
+      `);
+    });
+  });
+
+  tbody.innerHTML = rows.join('');
+}
+
+function showCatalogueProviderModal(utilityName) {
+  if (!catalogueData || !catalogueData.providers) return;
+  const p = catalogueData.providers.find(it => it.utility_name === utilityName);
+  if (!p) return;
+
+  const theme = DOMAIN_THEMES[p.utility_type] || DOMAIN_THEMES.General;
+  
+  const modal = document.getElementById('cat-provider-modal');
+  const titleEl = document.getElementById('cat-modal-title');
+  const typeBadgeEl = document.getElementById('cat-modal-type-badge');
+  const statusBadgeEl = document.getElementById('cat-modal-status-badge');
+  const subtitleEl = document.getElementById('cat-modal-subtitle');
+  const iconEl = document.getElementById('cat-modal-icon');
+  const bodyEl = document.getElementById('cat-modal-body');
+
+  if (titleEl) titleEl.innerText = p.utility_name;
+  if (typeBadgeEl) {
+    typeBadgeEl.innerText = p.utility_type;
+    typeBadgeEl.className = `px-2 py-0.5 rounded-full text-[10px] font-semibold border ${theme.badgeClass}`;
+  }
+  if (iconEl) {
+    iconEl.innerHTML = `<i data-lucide="${theme.icon}" class="w-5 h-5"></i>`;
+    iconEl.className = `w-10 h-10 rounded-xl ${theme.iconBg} flex items-center justify-center font-bold text-base border border-slate-700/60`;
+  }
+  if (subtitleEl) {
+    subtitleEl.innerText = `${p.utility_type} Infrastructure Provider • Authoritative Map Key & Warning Catalogue`;
+  }
+
+  if (statusBadgeEl) {
+    if ((p.high_count || 0) > 0) {
+      statusBadgeEl.innerText = `${p.high_count} High Hazard Warning(s) Active`;
+      statusBadgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-500/30';
+    } else if ((p.warnings_count || 0) > 0) {
+      statusBadgeEl.innerText = `${p.warnings_count} Advisory Warning(s)`;
+      statusBadgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30';
+    } else {
+      statusBadgeEl.innerText = 'Auto-Clear Verified';
+      statusBadgeEl.className = 'px-2.5 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30';
+    }
+  }
+
+  // Build Modal Body Content
+  let warnsTable = '';
+  if (!p.warnings || p.warnings.length === 0) {
+    warnsTable = `
+      <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-emerald-300 flex items-center gap-3">
+        <i data-lucide="shield-check" class="w-6 h-6 text-emerald-400 flex-shrink-0"></i>
+        <div>
+          <div class="font-bold text-sm text-emerald-200">Zero High Hazard Warnings Configured</div>
+          <p class="text-xs text-slate-400 mt-0.5">Per business safety guidelines in warnings_list.xlsx, this utility requires no blocking actions. Receipt receipts or maps automatically clear.</p>
+        </div>
+      </div>
+    `;
+  } else {
+    warnsTable = `
+      <div class="border border-slate-800 rounded-xl overflow-hidden shadow-inner">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950/90 text-slate-400 uppercase text-[10px] border-b border-slate-800">
+            <tr>
+              <th class="p-3 font-semibold">Business Warning Statement (warnings_list.xlsx)</th>
+              <th class="p-3 font-semibold">Severity</th>
+              <th class="p-3 font-semibold">SafeDig Policy</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 bg-slate-900/50">
+            ${p.warnings.map(w => {
+              const isHigh = w.severity === 'HIGH';
+              const sevBadge = isHigh 
+                ? '<span class="px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold text-[10px]">HIGH HAZARD</span>' 
+                : '<span class="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-[10px]">' + (w.raw_status || 'ADVISORY') + '</span>';
+              const polText = isHigh 
+                ? '<span class="text-rose-400 font-semibold flex items-center gap-1.5"><i data-lucide="alert-octagon" class="w-3.5 h-3.5"></i> Blocks release if found in AOI</span>' 
+                : '<span class="text-slate-400 flex items-center gap-1.5"><i data-lucide="info" class="w-3.5 h-3.5"></i> Non-blocking advisory note</span>';
+              return `
+                <tr>
+                  <td class="p-3 font-medium text-slate-100">${w.warning_text}</td>
+                  <td class="p-3 whitespace-nowrap">${sevBadge}</td>
+                  <td class="p-3 whitespace-nowrap">${polText}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  // Symbology Table
+  let symbTable = '';
+  if (p.legend && p.legend.features && p.legend.features.length > 0) {
+    symbTable = `
+      <div class="border border-slate-800 rounded-xl overflow-hidden shadow-inner">
+        <div class="p-3 bg-slate-950/80 border-b border-slate-800 flex items-center justify-between text-xs">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white">${p.legend.legend_id || 'Legend Specification'}</span>
+            <span class="px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 text-[10px] font-mono">v${p.legend.version || '1.0'}</span>
+          </div>
+          <span class="text-[11px] text-slate-400 font-mono">${p.legend.source || 'Authoritative Registry'}</span>
+        </div>
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-950/90 text-slate-400 uppercase text-[10px] border-b border-slate-800">
+            <tr>
+              <th class="p-3 font-semibold">Map Feature / Description</th>
+              <th class="p-3 font-semibold">Symbology Preview</th>
+              <th class="p-3 font-semibold">Color Signature</th>
+              <th class="p-3 font-semibold">OCR Text Keywords</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-800/60 bg-slate-900/50">
+            ${p.legend.features.map(f => {
+              const dashStyle = f.is_dashed 
+                ? `background: repeating-linear-gradient(to right, ${f.color_hex}, ${f.color_hex} 4px, transparent 4px, transparent 8px); height: 3px;` 
+                : `background-color: ${f.color_hex}; height: 3.5px;`;
+              const labels = (f.text_labels || []).map(l => `<span class="px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 font-mono text-[10px] border border-slate-700/60">${l}</span>`).join(' ') || '<span class="text-slate-400 font-mono text-[11px]">—</span>';
+              return `
+                <tr>
+                  <td class="p-3 font-medium text-slate-100">
+                    <div>${f.description}</div>
+                    <div class="text-[10px] text-slate-400 font-mono">${f.feature_id}</div>
+                  </td>
+                  <td class="p-3 whitespace-nowrap">
+                    <div class="flex items-center gap-2">
+                      <span class="w-10 rounded-full inline-block" style="${dashStyle}"></span>
+                      <span class="text-[10px] text-slate-400 font-mono">${f.is_dashed ? 'Dashed' : 'Solid'}</span>
+                    </div>
+                  </td>
+                  <td class="p-3 whitespace-nowrap font-mono text-[11px]">
+                    <div class="flex items-center gap-2">
+                      <span class="w-3.5 h-3.5 rounded-md border border-slate-700 shadow-sm flex-shrink-0" style="background-color: ${f.color_hex}"></span>
+                      <span class="text-slate-200">${f.color_hex}</span>
+                      <span class="text-slate-400">RGB(${f.color_rgb.join(',')})</span>
+                    </div>
+                  </td>
+                  <td class="p-3">${labels}</td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  if (bodyEl) {
+    bodyEl.innerHTML = `
+      <!-- Section 1: Business Warning Rules -->
+      <div class="space-y-2">
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="file-spreadsheet" class="w-4 h-4 text-blue-400"></i>
+          Business Warning Rules (warnings_list.xlsx)
+        </h4>
+        ${warnsTable}
+      </div>
+
+      <!-- Section 2: Symbology -->
+      <div class="space-y-2 pt-2">
+        <h4 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+          <i data-lucide="palette" class="w-4 h-4 text-blue-400"></i>
+          Authoritative Vector &amp; Dynamic Symbology
+        </h4>
+        ${symbTable}
+      </div>
+
+      <!-- Section 3: SafeDig Pipeline Integration -->
+      <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 space-y-2">
+        <h4 class="text-xs font-bold text-slate-200 flex items-center gap-1.5">
+          <i data-lucide="cpu" class="w-4 h-4 text-indigo-400"></i>
+          SafeDig Multi-Pass Engine Integration
+        </h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-400">
+          <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+            <span class="font-bold text-slate-300 block mb-0.5">Pass D1 — Authoritative Vector Discovery</span>
+            Extracts exact drawing paths matching RGB signatures and stroke widths within the dig site boundary.
+          </div>
+          <div class="p-2.5 rounded-lg bg-slate-900 border border-slate-800">
+            <span class="font-bold text-slate-300 block mb-0.5">Pass D2 — Chromatic CV Raster Scan</span>
+            Scans embedded raster maps with HSV hue masks, blanking site-boundary borders to eliminate false positives.
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  if (modal) modal.classList.remove('hidden');
+  if (window.lucide) lucide.createIcons();
+}
+
+function closeCatalogueModal() {
+  const modal = document.getElementById('cat-provider-modal');
+  if (modal) modal.classList.add('hidden');
+}
+
+function setCatalogueTypeFilter(type) {
+  currentCatTypeFilter = type;
+  document.querySelectorAll('.cat-type-pill').forEach(btn => {
+    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+    btn.classList.add('text-slate-400');
+  });
+  const activeBtn = document.getElementById(`cat-type-${type}`);
+  if (activeBtn) {
+    activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+    activeBtn.classList.remove('text-slate-400');
+  }
+  renderCatalogue();
+}
+
+function onCatalogueSeverityFilterChange() {
+  const sel = document.getElementById('cat-severity-filter');
+  if (sel) {
+    currentCatSevFilter = sel.value;
+    renderCatalogue();
+  }
+}
+
+function onCatalogueSearchInput() {
+  const inp = document.getElementById('cat-search-input');
+  const clearBtn = document.getElementById('cat-search-clear');
+  if (inp) {
+    currentCatSearch = inp.value;
+    if (clearBtn) {
+      if (currentCatSearch) clearBtn.classList.remove('hidden');
+      else clearBtn.classList.add('hidden');
+    }
+    renderCatalogue();
+  }
+}
+
+function clearCatalogueSearch() {
+  const inp = document.getElementById('cat-search-input');
+  const clearBtn = document.getElementById('cat-search-clear');
+  if (inp) inp.value = '';
+  if (clearBtn) clearBtn.classList.add('hidden');
+  currentCatSearch = '';
+  renderCatalogue();
+}
+
+function setCatalogueViewMode(mode) {
+  currentCatViewMode = mode;
+  const btnGrid = document.getElementById('cat-btn-view-grid');
+  const btnTable = document.getElementById('cat-btn-view-table');
+
+  if (mode === 'grid') {
+    if (btnGrid) {
+      btnGrid.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1.5';
+    }
+    if (btnTable) {
+      btnTable.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5';
+    }
+  } else {
+    if (btnTable) {
+      btnTable.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-all bg-blue-600 text-white shadow-sm flex items-center gap-1.5';
+    }
+    if (btnGrid) {
+      btnGrid.className = 'px-2.5 py-1.5 rounded-lg text-xs font-medium text-slate-400 hover:text-slate-200 transition-all flex items-center gap-1.5';
+    }
+  }
+  renderCatalogue();
+}
+
+function resetCatalogueFilters() {
+  currentCatTypeFilter = 'ALL';
+  currentCatSevFilter = 'ALL';
+  currentCatSearch = '';
+  
+  const inp = document.getElementById('cat-search-input');
+  if (inp) inp.value = '';
+  const clearBtn = document.getElementById('cat-search-clear');
+  if (clearBtn) clearBtn.classList.add('hidden');
+  const sel = document.getElementById('cat-severity-filter');
+  if (sel) sel.value = 'ALL';
+
+  document.querySelectorAll('.cat-type-pill').forEach(btn => {
+    btn.classList.remove('active', 'bg-blue-600', 'text-white');
+    btn.classList.add('text-slate-400');
+  });
+  const activeBtn = document.getElementById('cat-type-ALL');
+  if (activeBtn) {
+    activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
+    activeBtn.classList.remove('text-slate-400');
+  }
+
+  renderCatalogue();
+}
+
 // ─── Startup ─────────────────────────────────────────────────────────────────
 
 window.addEventListener('DOMContentLoaded', () => {
@@ -1020,10 +1762,15 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    const modal = document.getElementById('map-fullscreen-modal');
-    if (modal && !modal.classList.contains('hidden')) {
+    const fsModal = document.getElementById('map-fullscreen-modal');
+    if (fsModal && !fsModal.classList.contains('hidden')) {
       toggleMapFullscreen();
+    }
+    const catModal = document.getElementById('cat-provider-modal');
+    if (catModal && !catModal.classList.contains('hidden')) {
+      closeCatalogueModal();
     }
   }
 });
+
 

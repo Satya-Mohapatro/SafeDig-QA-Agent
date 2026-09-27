@@ -145,16 +145,17 @@ def run_map_qa_pipeline(
         wdefs = master_warning_catalogue.get_definitions_for_provider(rec.utility_name)
         ev_dir = os.path.join(out_dir, "evidence")
         os.makedirs(ev_dir, exist_ok=True)
+        map_page = getattr(doc_obj, "map_page_num", 1) or 1
         legend = resolve_legend(
             rec.utility_name,
             pdf_path=pdf_path,
-            page_num=1,
+            page_num=map_page,
             output_crop_dir=ev_dir,
             document_id=doc_id
         )
         
         # 8. AOI Resolution
-        aoi = get_document_aoi(pdf_path, doc_id, page_num=1)
+        aoi = get_document_aoi(pdf_path, doc_id, page_num=map_page)
         
         # 9. Upstream Claimed Warning Parsing
         claimed_w = None

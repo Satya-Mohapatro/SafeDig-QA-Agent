@@ -1,4 +1,30 @@
-# SafeDig AI — The 17 Mandatory Release Gates Specification
+"""
+SafeDig AI - The 17 Mandatory Release Gates Generator
+Outputs:
+1. Documentation/SafeDig_17_Mandatory_Release_Gates.md
+2. Documentation/SafeDig_17_Mandatory_Release_Gates.pdf
+3. SafeDig_17_Mandatory_Release_Gates.pdf (Root mirror)
+"""
+
+import os
+import sys
+import shutil
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from tools.markdown_pdf_compiler import compile_markdown_to_pdf
+
+DOCS_DIR = r"D:\SafeDig_AG\Documentation"
+ROOT_DIR = r"D:\SafeDig_AG"
+MD_PATH = os.path.join(DOCS_DIR, "SafeDig_17_Mandatory_Release_Gates.md")
+PDF_PATH = os.path.join(DOCS_DIR, "SafeDig_17_Mandatory_Release_Gates.pdf")
+ROOT_PDF_PATH = os.path.join(ROOT_DIR, "SafeDig_17_Mandatory_Release_Gates.pdf")
+
+os.makedirs(DOCS_DIR, exist_ok=True)
+
+MD_CONTENT = """# SafeDig AI — The 17 Mandatory Release Gates Specification
 **Engineering Architecture, Verification Logic & Compliance Enforcement**  
 **Standard**: UK Health and Safety Guidance 47 (HSG47) & CDM 2015 Regulations  
 **Classification**: Safety-Critical Underground Utility Assurance  
@@ -61,7 +87,8 @@ The 17 release gates are structured into 5 defense-in-depth stages:
                                          │
                                          ▼
                            All 17 Simultaneously Pass?
-                                  /                                         YES /              \ NO
+                                  /            \
+                             YES /              \ NO
                                 ▼                ▼
                         [ 🟢 AUTO_CLEAR ]   [ 🟡 HUMAN_REVIEW / 🔴 BLOCKED ]
 ```
@@ -385,3 +412,21 @@ The Policy Engine evaluates gates according to a strict hierarchical priority la
 - **Dynamic 17-Gate Grid**: All 17 gates are displayed with green checkmarks or red failure badges. Clicking any gate filters the vector overlay to highlight the exact visual evidence or geometry violation.
 - **Human Review Overrides**: Overrides (Accept Risk / Reject Permit) require safety engineer credentials and are permanently logged in `safedig.db` alongside the original gate evaluation snapshot.
 - **Cryptographic Immutability**: Every decision produces a tamper-proof SHA-256 digital signature recorded in `safedig.db`, ensuring complete legal defensibility in statutory HSE inquiries.
+"""
+
+def generate_17_gates_documentation():
+    print(f"[1/2] Writing Markdown: {MD_PATH}")
+    with open(MD_PATH, 'w', encoding='utf-8') as f:
+        f.write(MD_CONTENT)
+        
+    print(f"[2/2] Compiling PDF: {PDF_PATH}")
+    compile_markdown_to_pdf(
+        MD_PATH,
+        PDF_PATH,
+        title="SafeDig AI — The 17 Mandatory Release Gates",
+        subtitle="Engineering Architecture, Verification Logic & Compliance Enforcement"
+    )
+    print("[SUCCESS] 17 Mandatory Release Gates documentation generated successfully!")
+
+if __name__ == "__main__":
+    generate_17_gates_documentation()

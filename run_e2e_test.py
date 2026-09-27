@@ -83,5 +83,13 @@ def run_e2e_pipeline(folder_path: str = "Data/244414_201678"):
     print("=" * 80)
 
 if __name__ == "__main__":
-    folder = sys.argv[1] if len(sys.argv) > 1 else "Data/244414_201678"
+    if len(sys.argv) > 1:
+        folder = sys.argv[1]
+    else:
+        data_dir = os.path.join(os.path.dirname(__file__), "Data")
+        candidates = [
+            os.path.join("Data", d) for d in os.listdir(data_dir)
+            if os.path.isdir(os.path.join(data_dir, d)) and not d.startswith('.')
+        ]
+        folder = candidates[0] if candidates else "Data/482319_212094"
     run_e2e_pipeline(folder)

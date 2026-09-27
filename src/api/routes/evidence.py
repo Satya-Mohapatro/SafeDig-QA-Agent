@@ -131,9 +131,10 @@ def get_document_map_image(
     os.makedirs(os.path.dirname(out_img), exist_ok=True)
     from src.aoi import get_document_aoi
     from src.evidence.crops import generate_aoi_map_render
-    aoi = get_document_aoi(pdf_path, document_id, page_num=1)
+    aoi = get_document_aoi(pdf_path, document_id)
     bbox = aoi.bbox if aoi else None
-    res = generate_aoi_map_render(pdf_path, aoi.page_num if aoi else 1, bbox, out_img, dpi=200, aoi=aoi)
+    page_to_render = aoi.page_num if aoi and aoi.page_num else 1
+    res = generate_aoi_map_render(pdf_path, page_to_render, bbox, out_img, dpi=200, aoi=aoi)
     if res and os.path.exists(out_img):
         return FileResponse(out_img, media_type="image/png")
         

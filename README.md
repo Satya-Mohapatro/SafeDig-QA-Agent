@@ -1,263 +1,323 @@
-# SafeDig — AI Map QA & Validation Platform
+<div align="center">
 
-[![Python 3.11+](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
-[![FastAPI](https://img.shields.io/badge/framework-FastAPI-009688.svg)](https://fastapi.tiangolo.com/)
-[![Tests Passing](https://img.shields.io/badge/tests-all%20passed-brightgreen.svg)](tests/)
-[![Docker Ready](https://img.shields.io/badge/docker-ready-2496ED.svg)](Dockerfile)
-[![Cross-Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-informational.svg)]()
-[![License: Proprietary](https://img.shields.io/badge/license-Proprietary-red.svg)]()
+# 🛡️ SafeDig AI
+### UK Underground Utility Dig-Safety Map QA & Validation Platform
 
-> **Enterprise AI Map QA & Validation Platform for UK Underground Utility Infrastructure Plans.**  
-> Deterministic, safety-critical verification across Gas, Electricity, Water, and Telecom safety plans under the non-negotiable safety invariant: **ZERO ESCAPED HAZARDS**.
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![LangGraph](https://img.shields.io/badge/LangGraph-Orchestration-FF6B35?style=for-the-badge)](https://github.com/langchain-ai/langgraph)
+[![PyMuPDF](https://img.shields.io/badge/PyMuPDF-1.28.2-4A90D9?style=for-the-badge)](https://pymupdf.readthedocs.io/)
+[![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)](https://opencv.org/)
+[![HSG47](https://img.shields.io/badge/Compliant-HSG47%20%26%20CDM%202015-10b981?style=for-the-badge)](https://www.hse.gov.uk/)
+[![License: Proprietary](https://img.shields.io/badge/License-Proprietary-red?style=for-the-badge)](/)
 
----
+> **Safety Invariant → `SAFE_MODE = True` → ZERO ESCAPED HAZARDS**
 
-## 📌 Problem & Solution Overview
+*Automated AI-augmented safety validator that re-validates upstream utility warning claims against actual CAD engineering drawings using deterministic computer vision, spatial mathematics, and 17 mandatory release gates — preventing fatal excavation strikes on buried high-voltage cables and high-pressure gas mains.*
 
-When civil engineering contractors, highways authorities, and telecoms operators request utility plans before digging (under the UK **HSG47: Avoiding Danger from Underground Services** and **LinesearchbeforeUdig / LSBUD** workflows), utility undertakers issue dense multi-page PDF dossiers showing high-voltage electric cables, high-pressure gas mains, and trunk water pipelines.
-
-Upstream index summaries frequently suffer from critical defects:
-1. **Missed Warnings (False Negatives)**: The index claims *"No plant affected"*, yet a live 11kV electrical cable or high-pressure gas pipe crosses directly through the excavation zone on the attached map. Striking these causes fatal arc-flashes, explosions, and millions in disruption.
-2. **False Alarms (False Positives)**: High-pressure assets terminate hundreds of meters outside the enquiry boundary, halting construction unnecessarily.
-3. **Missing or Corrupt Critical Maps**: Upstream reports an asset warning, but the corresponding CAD drawing is missing, encrypted, or corrupted.
-
-### The SafeDig Invariants
-- **Zero Escaped Hazards**: Every physical hazard intersecting the excavation boundary is detected.
-- **Fail Toward Safety**: Any ambiguous boundary, unreadable raster scan, or contradictory claim fails toward `HUMAN_REVIEW` or `BLOCKED`, never toward `AUTO_CLEAR`.
-- **Dual-Engine Separation**: Deterministic vector math and 17 policy gates have sole authority; local on-premise LLMs act in an advisory-only capacity (zero hallucinations).
-- **100% Cross-Platform & Portable**: Zero hardcoded drive letters or absolute paths. Dynamically resolves all paths relative to the repository root across Windows, Linux, macOS, and Docker.
+</div>
 
 ---
 
 ## 🏗️ System Architecture
 
-```mermaid
-flowchart TD
-    subgraph INGESTION["1. Ingestion & Document Resolution"]
-        A["Enquiry Directory<br/>(e.g., Data/244414_201678)"] --> B["Index Parser (Read-Only Excel)"]
-        A --> C["File Inventory Scanner (SHA-256)"]
-        B --> D["Index Records (e.g. 69 rows)"]
-        C --> E["Discovered Files (.pdf, .xlsx)"]
-        D & E --> F["Document Resolver"]
-        F --> G["Resolved Document Set"]
-    end
+![SafeDig AI System Architecture](Documentation/SafeDig_System_Architecture_Diagram.jpg)
 
-    subgraph ENGINE["2. Independent Spatial & CV Engine"]
-        G --> H["PyMuPDF Native Vector Stream Extractor"]
-        H --> I["Multi-Tier AOI Boundary Detector"]
-        I --> J["Enquiry Site Boundary (Polygon Hull)"]
-        H --> K["Vector Path & Style Extractor"]
-        K --> L["Achromatic Guard & Euclidean Color Analyzer"]
-        L & J --> M["Shapely Spatial Intersection Engine"]
-        M --> N["Independent Detected Candidates (Clustered)"]
-    end
-
-    subgraph RECONCILIATION["3. Reconciliation & Policy Evaluation"]
-        N & D --> O["Reconciliation Engine"]
-        O --> P{"Reconciliation Matrix"}
-        P -->|MATCH / CONFIRMED_CLEAN| Q["Auto-Clear Pathway"]
-        P -->|MISSED_WARNING / DISCREPANCY| R["Human Review Queue"]
-        Q & R --> S["17 Mandatory Safety Release Gates"]
-        S --> T{"Authoritative Decision"}
-        T -->|All Gates Pass| U["AUTO_CLEAR"]
-        T -->|Discrepancy / Uncertainty| V["HUMAN_REVIEW"]
-        T -->|Corrupt / Missing Map| W["BLOCKED"]
-    end
-
-    subgraph HITL["4. Advisory AI & Human-in-the-Loop"]
-        V --> X["LangGraph Local LLM Copilot (Advisory Summary)"]
-        V & X --> Y["Map QA Review Workspace (Pan/Zoom Canvas)"]
-        Y --> Z["Certified Engineer Sign-Off Action"]
-        Z --> AA["Immutable SQLite Audit Trail"]
-    end
-```
+> **How it works in plain English:**  
+> A civil contractor submits a dig inquiry. Utility companies reply with PDF maps + an Excel index. SafeDig ingests everything, independently scans every CAD drawing with dual-engine computer vision, computes whether any underground hazard intersects the excavation boundary, and runs 17 deterministic safety gates. The result is either a verified **AUTO CLEAR**, an escalated **HUMAN REVIEW**, or a hard **BLOCK** — with a tamper-proof SHA-256 audit record.
 
 ---
 
-## 🌟 Key Capabilities
+## ⚡ The Problem SafeDig Solves
 
-### 1. Dual-Engine Verification
-- **Deterministic Core**: PyMuPDF C-engine vector extraction, Shapely 2D planar geometry, OpenCV raster analysis, and a 17-Gate Safety Policy Engine.
-- **AI Advisory Copilot**: LangGraph state machine orchestrating local on-premise LLMs (Qwen 2.5 / Llama 3.2 via Ollama) generating natural language discrepancy notes and HSG47 precautions for human reviewers.
+In the UK, civil excavators must submit "dial-before-you-dig" inquiries via [LSBUD](https://lsbud.co.uk/) before breaking ground. Asset owners (UKPN, SGN, Cadent, Thames Water, Openreach etc.) return disclosure bundles containing summary letters and CAD drawings.
 
-### 2. Multi-Strategy Area of Interest (AOI) Detection
-- **Native Vector Dashed Boundary**: Automatically detects circular and polygonal dig sites defined by dashed linework (`[ 12 6 ] 0`) across Yellow/Gold (NGED), Magenta/Purple (UKPN, SGN), and Red.
-- **Cross-Document Consistency**: Propagates verified excavation boundary coordinates from vector plans to image-only raster maps within the same enquiry pack.
-- **Content-Density Canvas Fallback**: Employs margin-aware whole-canvas detection with explicit `FALLBACK` tagging and mandatory human escalation when dashed perimeters are absent.
+**The fatal failure mode:** A cover letter says *"No assets affected in your enquiry boundary"* — but the attached CAD plan clearly shows a live **11,000 Volt cable** slicing through the proposed trench. The site foreman trusts the letter, digs with a mechanical excavator, and strikes it.
 
-### 3. Precision Color Matching & Achromatic Linework Guard
-- **Achromatic Linework Guard**: Calculates color saturation $\Delta_{\text{chroma}} = \max(R,G,B) - \min(R,G,B)$. Prevents neutral grey Ordnance Survey basemap linework (`RGB 178, 178, 178`) from falsely matching chromatic utility lines (such as 11kV Dodger Blue `30, 144, 255`).
-- **Spatial Clustering & Deduplication**: Merges contiguous drawing segments into unified hazard entities with occurrence counts, eliminating candidate multiplication.
+| Failure Mode | Real Consequence | SafeDig Defence |
+| :--- | :--- | :--- |
+| **Missed Warning (False Negative)** | Arc-flash fatality, gas explosion, grid blackout | `MISSED_WARNING` → mandatory `HUMAN_REVIEW` |
+| **Ambiguous multi-map pack** | Engineer picks the wrong authoritative drawing | `AMBIGUOUS` resolution → `BLOCKED` |
+| **Corrupt / missing PDF** | Site digs on paperwork alone | `CORRUPTED` document → `BLOCKED` |
+| **Upstream omission** | Provider forgot to declare HP gas line | Independent CV scan catches it regardless |
 
-### 4. Interactive Pan/Zoom Map QA Console
-- Dual-panel single-page web console featuring interactive HTML5 canvas pan and zoom controls.
-- Dynamic SVG/canvas bounding box overlays highlighting the excavation site and live hazard lines.
-- One-click quick presets (`Data/244414_201678`, `Data/534668_175407`, etc.) with instant KPI metrics.
+> **The Invariant:** *"Every ambiguous, degraded, contradictory, or unreadable document must fail toward `HUMAN_REVIEW` or `BLOCKED` — never toward `AUTO_CLEAR`. A false negative is never traded for a cleaner false-positive count."*
 
 ---
 
-## 🚦 The 17 Mandatory Safety Release Gates
-
-SafeDig enforces 17 deterministic Boolean policy gates in strict sequence:
-
-| Gate ID | Release Gate Name | Trigger Condition | Severity | Action |
-|:---|:---|:---|:---|:---|
-| **G01** | `MISSED_CRITICAL_HAZARD` | High/Critical hazard (HP Gas, 11kV+) detected inside AOI; upstream claimed "No Plant". | **CRITICAL** | `BLOCKED` |
-| **G02** | `MISSED_STANDARD_HAZARD` | Standard hazard (LP Gas, Water, Telecom) detected inside AOI; upstream omitted it. | **HIGH** | `HUMAN_REVIEW` |
-| **G03** | `HAZARD_DETECTED_SAFE_MODE` | Any hazard detected inside AOI under `SAFE_MODE=True`. | **HIGH** | `HUMAN_REVIEW` |
-| **G04** | `TYPE_SEVERITY_MISMATCH` | Detected asset type or pressure/voltage class differs from upstream claim. | **HIGH** | `HUMAN_REVIEW` |
-| **G05** | `CORRUPT_DOCUMENT` | Document is corrupted, unrenderable, or password-protected. | **CRITICAL** | `BLOCKED` |
-| **G06** | `MISSING_MANDATORY_DOC` | Index lists a utility map file that does not exist on disk. | **HIGH** | `BLOCKED` |
-| **G07** | `AMBIGUOUS_DOC_RESOLUTION` | Multiple candidate map files match a single index entry with no tiebreaker. | **MEDIUM** | `HUMAN_REVIEW` |
-| **G08** | `UNRESOLVED_ORPHAN_MAP` | A utility map PDF exists on disk with no corresponding index entry. | **MEDIUM** | `HUMAN_REVIEW` |
-| **G09** | `FALLBACK_AOI_USED` | Dashed boundary absent; whole map canvas fallback was used. | **MEDIUM** | `HUMAN_REVIEW` |
-| **G10** | `LOW_AOI_CONFIDENCE` | Detected AOI boundary confidence score is below 0.80. | **MEDIUM** | `HUMAN_REVIEW` |
-| **G11** | `PURE_RASTER_MAP` | Map is scanned bitmap with 0 native vector paths. | **HIGH** | `HUMAN_REVIEW` |
-| **G12** | `LOW_DETECTION_CONFIDENCE` | Hazard candidate detected with confidence score below 0.85. | **MEDIUM** | `HUMAN_REVIEW` |
-| **G13** | `FALSE_POSITIVE_CLAIM` | Upstream claimed hazard, but no matching linework found inside AOI. | **LOW** | `HUMAN_REVIEW` |
-| **G14** | `CROSS_DOCUMENT_AOI_DRIFT` | Detected AOI boundaries diverge across different maps in the same job. | **HIGH** | `HUMAN_REVIEW` |
-| **G15** | `MISSING_LEGEND_PROFILE` | Utility provider map has no registered legend profile in catalogue. | **MEDIUM** | `HUMAN_REVIEW` |
-| **G16** | `EVIDENCE_PACKAGE_INCOMPLETE`| Hazard detected but high-resolution crop generation failed. | **LOW** | `HUMAN_REVIEW` |
-| **G17** | `UNVERIFIED_AUTO_CLEAR` | Upstream claims "No Plant" and 0 assets found, but document is non-vector. | **HIGH** | `BLOCKED` |
-
----
-
-## 🚀 Quick Start Guide
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python 3.11+
-- Git
+- **Python 3.11+**  
+- **Git**
+- *(Optional)* [Ollama](https://ollama.ai/) for local LLM advisory summaries (`qwen2.5:7b`)
 
-### 1. Clone the Repository
-```bash
-git clone https://github.com/<YOUR_USERNAME>/<YOUR_REPOSITORY>.git
-cd <YOUR_REPOSITORY>
-```
+### 1. Clone & Setup
 
-### 2. Set Up Virtual Environment
 ```bash
-# On Windows:
+git clone https://github.com/<YOUR_USERNAME>/safedig.git
+cd safedig
+
+# Create virtual environment
 python -m venv venv
+
+# Activate (Windows)
 .\venv\Scripts\activate
 
-# On Linux / macOS:
-python3 -m venv venv
+# Activate (Linux / macOS)
 source venv/bin/activate
 ```
 
-### 3. Install Dependencies
-```bash
-# Install core runtime dependencies
-pip install -r requirements.txt
+### 2. Install Dependencies
 
-# Install testing and development dependencies
+```bash
+pip install -r requirements.txt
 pip install -r requirements-dev.txt
 ```
 
-### 4. Configure Environment
-Copy the example environment configuration template:
+### 3. Configure Environment
+
 ```bash
-# On Windows:
+# Windows
 copy .env.example .env
 
-# On Linux / macOS:
+# Linux / macOS
 cp .env.example .env
 ```
-*Note: The platform works immediately with default relative paths. All variables (`DATA_DIR`, `OUTPUT_DIR`, `DATABASE_URL`, `SAFE_MODE`) can be customized in `.env`.*
 
-### 5. Verify Installation with Automated Tests
-```bash
-pytest tests/unit/ -v
-```
-All unit tests should pass with zero hardcoded path errors.
+Key settings in `.env`:
 
-### 6. Launch the Web Application
-```bash
-python -m uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+```ini
+SAFE_MODE=True                           # Never disable in production
+DATABASE_URL=sqlite:///safedig.db
+OLLAMA_BASE_URL=http://localhost:11434   # Optional — has 0ms fallback
+OLLAMA_MODEL=qwen2.5:7b
+LOG_LEVEL=INFO
 ```
-Open **[http://localhost:8000](http://localhost:8000)** in your web browser.
+
+### 4. Launch the Web Console
+
+```bash
+python -m uvicorn src.api.app:app --host 127.0.0.1 --port 8000 --reload
+```
+
+Open **[http://127.0.0.1:8000](http://127.0.0.1:8000)** — interactive radar scanner, canvas pan/zoom, and 17-gate status dashboard.
+
+### 5. Run the Pipeline via CLI
+
+```bash
+# Auto-detect the first available job in Data/
+python run_e2e_test.py
+
+# Or target a specific job folder
+python run_e2e_test.py Data/482319_212094
+```
 
 ---
 
-## 🧪 Automated Testing Suite
+## 🔬 How the Engine Works (11 Phases)
 
-The test suite covers domain contracts, spatial geometry math, PDF extraction, and end-to-end integration workflows:
+```
+Phase 1  →  INTAKE           Self-healing path resolution + index.xlsx parsing
+Phase 2  →  INGESTION        SHA-256 verification + PDF modality (VECTOR/RASTER/HYBRID)
+Phase 3  →  LEGEND LOOKUP    Provider recognition → colour bands (ΔE≤28) + HSG47 thresholds
+Phase 4  →  AOI DETECTION    Extract excavation boundary polygon + rotation normalisation
+Phase 5  →  VECTOR SCAN      PyMuPDF path extraction (Channel A)
+Phase 6  →  RASTER SCAN      OpenCV 300 DPI HSV masking + contour detection (Channel B)
+Phase 7  →  OCR BOOST        Text scan for "11kV", "HP GAS", "SUBSTATION" labels (Channel C)
+Phase 8  →  RECONCILIATION   Shapely 2D intersection + HSG47 buffers (500mm/3m/15m)
+Phase 9  →  17 GATES         Deterministic Boolean policy evaluation
+Phase 10 →  ADVISORY LLM     Ollama Qwen 2.5 summary (advisory only, zero authority)
+Phase 11 →  AUDIT LOCK       SHA-256 forensic record committed to safedig.db
+```
+
+---
+
+## 🚦 The 17 Mandatory Release Gates
+
+A document only receives `AUTO_CLEAR` when **all 17 gates simultaneously pass**. A single failure halts clearance.
+
+| Stage | Gates | Responsibility |
+| :--- | :--- | :--- |
+| **Stage 1** — Intake & Pre-Flight | `01` → `04` | Index validity, PDF existence, 1-to-1 document resolution, readability |
+| **Stage 2** — Provider & Knowledge | `05` → `07` | Statutory undertaker ID, warning catalogue, cartographic legend |
+| **Stage 3** — Spatial AOI | `08` → `09` | Excavation polygon extraction, topological closure, vertex count |
+| **Stage 4** — Detection & Reconciliation | `10` → `13` | Dual-engine scan completion, intersection math, zero missed hazards, detector consensus |
+| **Stage 5** — QA, Evidence & Audit | `14` → `17` | Image quality, provider rules, evidence package completeness, audit persistence |
+
+### Decision Ladder (Priority Order)
+
+```
+Upstream "No" + CV confirms clean       →  🟢  AUTO_CLEAR
+Document missing or corrupted           →  🔴  BLOCKED
+Multiple candidate maps (ambiguous)     →  🔴  BLOCKED
+Plan is an enquiry notice, no map data  →  🔴  BLOCKED
+MISSED_WARNING detected                 →  🟡  HUMAN_REVIEW  (mandatory)
+POSSIBLE_FALSE_POSITIVE                 →  🟡  HUMAN_REVIEW
+Critical hazard confirmed in AOI        →  🟡  HUMAN_REVIEW
+Legend or AOI unresolvable              →  🟡  HUMAN_REVIEW
+All 17 gates pass + evidence complete   →  🟢  AUTO_CLEAR
+```
+
+---
+
+## 🧠 Dual-Engine Design Principle
+
+SafeDig uses a **strict separation of authority**:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  DETERMINISTIC CORE  (100% authority over all decisions) │
+│  PyMuPDF + Shapely + OpenCV + 17 Policy Gates           │
+│  Bit-for-bit reproducible. Zero hallucination.          │
+└─────────────────────────────────────────────────────────┘
+               ↕  advisory only, zero authority
+┌─────────────────────────────────────────────────────────┐
+│  ADVISORY AI LAYER  (generates human-readable summaries) │
+│  LangGraph + Ollama (Qwen 2.5 / Llama 3.2)             │
+│  Cannot override, clear, or relax any safety gate.      │
+│  If offline → 0ms deterministic rule fallback.          │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📁 Project Structure
+
+```
+SafeDig_AG/
+│
+├── 📂 src/                          # Core application (28 packages, 85+ files)
+│   ├── agent/                       # Advisory LLM service & models
+│   ├── aoi/                         # Excavation boundary detector
+│   ├── api/                         # FastAPI server, routes & web console
+│   │   └── static/                  # HTML5 + JavaScript single-page UI
+│   ├── batch/                       # Background queue, scanner & workers
+│   ├── config/                      # Pydantic settings & structured logging
+│   ├── cv/                          # OpenCV HSV masking & morphology
+│   ├── db/                          # SQLite engine, ORM models & repositories
+│   ├── detection/                   # Dual-engine spatial detection coordinator
+│   ├── domain/                      # Pydantic domain models & enums
+│   ├── eval/                        # Benchmark datasets & accuracy metrics
+│   ├── evidence/                    # 300 DPI crop generator & overlays
+│   ├── index/                       # Excel index.xlsx parser & validator
+│   ├── ingestion/                   # Fuzzy inventory matcher & hasher
+│   ├── legends/                     # Cartographic legend registry
+│   ├── ocr/                         # OCR hazard label scanner
+│   ├── orchestration/               # LangGraph DAG & pipeline nodes
+│   ├── pdf/                         # PyMuPDF extractor, inspector & renderer
+│   ├── policy/                      # ← The 17 Mandatory Release Gates
+│   ├── providers/                   # Statutory undertaker name registry
+│   ├── qa/                          # QA workspace & human review disposition
+│   ├── reconciliation/              # Shapely 2D intersection engine
+│   ├── reporting/                   # Job report generator (JSON / MD)
+│   ├── spatial/                     # Coordinate transforms & HSG47 buffers
+│   ├── utils/                       # Path resolver, security & telemetry
+│   ├── vector/                      # PDF vector path analyser & geometry
+│   ├── warnings/                    # HSG47 warning catalogue & thresholds
+│   └── pipeline.py                  # CLI pipeline entry point
+│
+├── 📂 Data/                         # Statutory utility enquiry job folders
+├── 📂 Documentation/                # All specs: Markdown + PDF
+│   ├── SafeDig_System_Architecture_Diagram.jpg
+│   ├── SafeDig_17_Mandatory_Release_Gates.md/pdf
+│   ├── SafeDig_Codebase_File_by_File_Explanation.md/pdf
+│   ├── SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.md/pdf
+│   ├── SafeDig_End_to_End_Project_Architecture.md/pdf
+│   ├── SafeDig_Technology_Stack_Specification.md/pdf
+│   └── SafeDig_Trainee_Onboarding_and_Engineering_Cookbook.md/pdf
+├── 📂 alembic/                      # Database schema migrations
+├── 📂 evidence/                     # Runtime legend crop outputs
+├── 📂 info/                         # Domain specs & requirements traceability
+├── 📂 qa_output/                    # Pipeline output: evidence, reports
+├── 📂 tests/                        # PyTest unit & integration suites
+├── 📂 tools/                        # Documentation generators & utilities
+│
+├── .env / .env.example              # Environment configuration
+├── alembic.ini                      # DB migration config
+├── pyproject.toml                   # Project metadata & pytest config
+├── requirements.txt                 # Production dependencies
+├── requirements-dev.txt             # Dev & test dependencies
+├── run_e2e_test.py                  # End-to-end pipeline test runner
+├── run_production.bat               # Windows production launch
+└── safedig.db                       # Live SQLite forensic audit database
+```
+
+---
+
+## 🧪 Testing
 
 ```bash
-# Run all unit tests
+# Unit tests (pure logic, no real data required)
 pytest tests/unit/ -v
 
-# Run integration tests
+# Integration tests (requires Data/ job folders)
 pytest tests/integration/ -v
 
-# Run with coverage report
+# Full suite with coverage
 pytest --cov=src tests/
+
+# End-to-end pipeline test (auto-detects Data/ folder)
+python run_e2e_test.py
 ```
 
 ---
 
-## 📁 Repository Structure
+## 📚 Documentation
 
-```
-├── alembic/                           # Database migration scripts (Alembic)
-├── Data/                              # Real UK utility enquiry job packs (read-only)
-│   ├── 244414_201678/                 # Wales job pack (NGED, BT, GTC, Welsh Water)
-│   ├── 534668_175407/                 # Thames Water clean/waste water pack
-│   └── warnings_list 2 1 (1).xlsx     # 44 authoritative warning definitions
-├── Documentation/                     # Technical specifications, guides & PDFs
-│   ├── SafeDig_End_To_End_Architecture.md (.pdf)
-│   ├── SafeDig_Codebase_File_By_File_Explanation.md (.pdf)
-│   └── SafeDig_Complete_Tech_Stack_Guide.md (.pdf)
-├── qa_output/                         # Generated job reports, visual crops & manifests
-├── src/                               # SafeDig core application package
-│   ├── agent/                         # Advisory LLM Copilot & structured models
-│   ├── aoi/                           # Multi-tier AOI enquiry boundary detector
-│   ├── api/                           # FastAPI application, routes & static web SPA
-│   ├── batch/                         # Priority queue, scanner & background worker
-│   ├── config/                        # Dynamic root-relative settings & logging
-│   ├── cv/                            # OpenCV HSV masking, morphology & template match
-│   ├── db/                            # Async SQLAlchemy models, engine & repositories
-│   ├── detection/                     # Independent vector scanning & spatial clustering
-│   ├── documents/                     # Ambiguous multi-document resolver
-│   ├── domain/                        # Pure Pydantic domain models & typed enums
-│   ├── eval/                          # Golden benchmark dataset, metrics & runner
-│   ├── evidence/                      # High-resolution crops & visual packager
-│   ├── index/                         # Read-only Excel parser & validator
-│   ├── legends/                       # Master symbology profiles (UKPN, SGN, NGED, etc.)
-│   ├── ocr/                           # Optical character recognition service
-│   ├── orchestration/                 # LangGraph cyclic state machine workflow
-│   ├── pdf/                           # PyMuPDF stream extractor, inspector & renderer
-│   ├── policy/                        # 17 deterministic safety policy gates
-│   ├── providers/                     # Utility undertaker alias normalization
-│   ├── qa/                            # Human disposition service & workspace builder
-│   ├── reconciliation/                # Claims vs detections reconciliation matrix
-│   ├── reporting/                     # Final job report generator (JSON / MD)
-│   ├── spatial/                       # Shapely 2D planar topology & coordinate transforms
-│   ├── utils/                         # Security sanitization, profiler & telemetry
-│   ├── vector/                        # Color normalization, Euclidean dist & geometry
-│   ├── warnings/                      # Master warning catalogue service
-│   └── pipeline.py                    # Master end-to-end pipeline runner
-├── tests/                             # Unit & integration regression test suites
-├── tools/                             # Diagnostic probing & PDF generator scripts
-├── .env.example                       # Environment configuration template
-├── .gitignore                         # Production git ignore configuration
-├── docker-compose.yml                 # Multi-container Docker deployment
-├── Dockerfile                         # Production multi-stage containerfile
-├── pyproject.toml                     # Modern Python project metadata
-├── requirements.txt                   # Production runtime dependencies
-├── requirements-dev.txt               # Development & test dependencies
-└── README.md                          # Platform overview & quickstart guide
+All documentation lives in [`Documentation/`](Documentation/) as both **Markdown** and **PDF**:
+
+| Document | Description |
+| :--- | :--- |
+| [System Architecture](Documentation/SafeDig_End_to_End_Project_Architecture.md) | 7-tier architecture blueprint, dataflow, deployment topology |
+| [End-to-End Code Working Mechanism](Documentation/SafeDig_Complete_End_to_End_Execution_and_Code_Working_Mechanism.md) | Deep-dive into all 11 execution phases with code references |
+| [17 Mandatory Release Gates](Documentation/SafeDig_17_Mandatory_Release_Gates.md) | Gate-by-gate specification with Python code, HSG47 rationale & triage |
+| [Codebase File-by-File Guide](Documentation/SafeDig_Codebase_File_by_File_Explanation.md) | Every file across all 28 packages explained |
+| [Technology Stack Specification](Documentation/SafeDig_Technology_Stack_Specification.md) | Full bill of materials, hardware profiles, deployment specs |
+| [Trainee Onboarding & Cookbook](Documentation/SafeDig_Trainee_Onboarding_and_Engineering_Cookbook.md) | Day-1 setup, mental models, recipes for adding providers & gates |
+
+To regenerate all documentation:
+```bash
+python tools/sync_all_documentation.py
 ```
 
 ---
 
-## 🔒 Security, Compliance & Data Sovereignty
+## 🛡️ Technology Stack
 
-- **Critical National Infrastructure (CNI) Protection**: Underground utility maps indicate the exact geospatial positions of high-pressure gas transmission pipelines and high-voltage electricity grids. SafeDig executes all spatial math and LLM inference locally on-premise, ensuring zero data egress to external third-party cloud APIs.
-- **Read-Only Data Ingestion**: Incoming `index.xlsx` files and PDF maps are strictly treated as immutable read-only assets with cryptographic SHA-256 fingerprinting.
-- **Audit Immutability**: Every human disposition action is logged with reviewer identity, timestamp, and mandatory rationale into an append-only SQLite audit repository.
+| Layer | Technology | Version | Role |
+| :--- | :--- | :--- | :--- |
+| Language | Python | `3.11+` | Core runtime |
+| REST API | FastAPI + Uvicorn | `0.100+` | Async API server |
+| Vector Engine | PyMuPDF | `1.28.2` | PDF path extraction & 300 DPI render |
+| Spatial Math | Shapely + GEOS | `2.0+` | 2D polygon intersection |
+| Computer Vision | OpenCV Headless | `4.8+` | HSV masking, contour detection |
+| Orchestration | LangGraph | `0.2+` | Stateful pipeline DAG |
+| Local LLM | Ollama (Qwen 2.5) | `7B / 14B` | Advisory summaries only |
+| Database | SQLite + SQLAlchemy | `2.0+` | Forensic audit (WAL mode) |
+| Migrations | Alembic | `1.13+` | Schema versioning |
+| Data Parsing | Pandas + OpenPyXL | `2.0+` | index.xlsx ingestion |
+| PDF Reports | ReportLab | `5.0.1` | Compliance spec generation |
+
+---
+
+## 🔒 Security & Compliance
+
+- **Zero Cloud Egress** — All LLM inference runs locally via Ollama. Utility maps (Critical National Infrastructure data) never leave the premises.
+- **Read-Only Ingestion** — `index.xlsx` and all PDFs are treated as immutable with SHA-256 fingerprinting.
+- **Immutable Audit Trail** — Every decision, gate evaluation, and human override is permanently recorded in `safedig.db` with timestamps and cryptographic signatures.
+- **HSG47 & CDM 2015 Compliant** — Standoff buffers (500mm hand-dig / 3m HV / 15m HP Gas), mandatory human review for all critical hazards, and full forensic reproducibility for HSE statutory inquiries.
 
 ---
 
 ## 📄 License
-Proprietary — SafeDig Enterprise Platform. All rights reserved.
+
+**Proprietary** — SafeDig Enterprise Platform. All rights reserved.
+
+---
+
+<div align="center">
+
+*Built for UK civil engineering safety. Every line of code serves one purpose: making sure no excavator ever strikes an undisclosed buried hazard.*
+
+</div>

@@ -1,4 +1,30 @@
-# SafeDig AI — Codebase File-by-File Technical Guide
+"""
+SafeDig AI - Codebase File-by-File Technical Guide Generator
+Outputs:
+1. Documentation/SafeDig_Codebase_File_by_File_Explanation.md
+2. Documentation/SafeDig_Codebase_File_by_File_Explanation.pdf
+3. SafeDig_Codebase_File_by_File_Explanation.pdf (Root mirror)
+"""
+
+import os
+import sys
+import shutil
+
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if ROOT_DIR not in sys.path:
+    sys.path.insert(0, ROOT_DIR)
+
+from tools.markdown_pdf_compiler import compile_markdown_to_pdf
+
+DOCS_DIR = r"D:\SafeDig_AG\Documentation"
+ROOT_DIR = r"D:\SafeDig_AG"
+MD_PATH = os.path.join(DOCS_DIR, "SafeDig_Codebase_File_by_File_Explanation.md")
+PDF_PATH = os.path.join(DOCS_DIR, "SafeDig_Codebase_File_by_File_Explanation.pdf")
+ROOT_PDF_PATH = os.path.join(ROOT_DIR, "SafeDig_Codebase_File_by_File_Explanation.pdf")
+
+os.makedirs(DOCS_DIR, exist_ok=True)
+
+MD_CONTENT = """# SafeDig AI — Codebase File-by-File Technical Guide
 **Complete Architectural Walkthrough of all 85+ Source Modules & Subsystems**  
 **Classification**: Engineering Reference & Trainee Onboarding Handbook  
 **Compliance Standard**: UK Health and Safety Guidance 47 (HSG47) & CDM 2015  
@@ -242,3 +268,21 @@ The domain layer enforces strict data contracts using Pydantic v2 models:
 - **`src/utils/telemetry.py`**: Execution latency timers, memory profilers, and error counters.
 - **`src/utils/profiler.py`**: Code block profiling utility identifying processing bottlenecks.
 - **`src/utils/logging.py`**: Helper logging functions and formatting helpers.
+"""
+
+def generate_file_by_file_documentation():
+    print(f"[1/2] Writing Markdown: {MD_PATH}")
+    with open(MD_PATH, 'w', encoding='utf-8') as f:
+        f.write(MD_CONTENT)
+        
+    print(f"[2/2] Compiling PDF: {PDF_PATH}")
+    compile_markdown_to_pdf(
+        MD_PATH,
+        PDF_PATH,
+        title="SafeDig AI — Codebase File-by-File Technical Guide",
+        subtitle="Complete Architectural Walkthrough of all 85+ Source Modules & Subsystems"
+    )
+    print("[SUCCESS] Codebase File-by-File documentation generated successfully!")
+
+if __name__ == "__main__":
+    generate_file_by_file_documentation()
